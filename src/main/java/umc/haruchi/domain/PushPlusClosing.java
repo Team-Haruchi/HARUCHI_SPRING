@@ -19,8 +19,7 @@ public class PushPlusClosing extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Enumerated(EnumType.STRING)
+  
     @Column(nullable = false)
     private boolean closingOption;
 
