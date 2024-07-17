@@ -1,4 +1,4 @@
-name: UMC Dev CI/CD
+name: HARUCHI Dev CI/CD
 
 on:
   pull_request:
