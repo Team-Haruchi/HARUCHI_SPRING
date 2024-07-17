@@ -1,11 +1,8 @@
 spring:
-  config:
-    import: application-secret.yml
-
   datasource:
     url: ${DEV_MYSQL_URL}
     username: ${DEV_MYSQL_USERNAME}
-    password: ${DEV_MYSQL_password}
+    password: ${DEV_MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
