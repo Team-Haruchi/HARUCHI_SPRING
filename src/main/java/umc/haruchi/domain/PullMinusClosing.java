@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import umc.haruchi.domain.common.BaseEntity;
-import umc.haruchi.domain.enums.ClosingOption;
 import umc.haruchi.domain.enums.RedistributionOption;
 import umc.haruchi.domain.mapping.BudgetRedistribution;
 
@@ -21,9 +20,8 @@ public class PullMinusClosing extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "VARCHAR(1) DEFAULT 'F'")
-    private ClosingOption closingOption;
+    @Column(nullable = false)
+    private boolean closingOption;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'DATE'")
