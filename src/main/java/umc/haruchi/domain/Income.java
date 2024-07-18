@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import umc.haruchi.domain.common.BaseEntity;
+import umc.haruchi.domain.enums.IncomeCategory;
 
 @Entity
 @Getter
@@ -22,8 +23,9 @@ public class Income extends BaseEntity {
     @Column(nullable = false, columnDefinition = "bigint default 0")
     private Long incomeAmount;
 
-    @Column(nullable = false, columnDefinition = "bigint default 0")
-    private Long incomeCategory;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "VARCHAR(15) DEFAULT 'NONE'")
+    private IncomeCategory incomeCategory;
 
     @Column(nullable = true, length = 10)
     private String memo;
