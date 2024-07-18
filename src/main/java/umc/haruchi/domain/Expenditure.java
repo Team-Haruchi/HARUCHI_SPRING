@@ -18,7 +18,7 @@ public class Expenditure extends BaseEntity {
     @Column(nullable = false, columnDefinition = "bigint default 0")
     private Long expenditureAmount;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "bigint default 0")
     private Long expenditureCategory;
 
     @Column(nullable = true, length = 10)
