@@ -4,16 +4,21 @@ import com.fasterxml.jackson.databind.ser.Serializers;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 import umc.haruchi.domain.common.BaseEntity;
 import umc.haruchi.domain.enums.DayBudgetStatus;
 import umc.haruchi.domain.mapping.BudgetRedistribution;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
 @Builder
+@DynamicUpdate
+@DynamicInsert
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DayBudget extends BaseEntity {
@@ -43,8 +48,16 @@ public class DayBudget extends BaseEntity {
     private MonthBudget monthBudget;
 
     @OneToMany(mappedBy = "dayBudget", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Income> incomeList = new ArrayList<>();
 
     @OneToMany(mappedBy = "dayBudget", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Expenditure> expenditureList = new ArrayList<>();
+
+    @PrePersist
+    public void prePersist() {
+        LocalDate now = LocalDate.now();
+        this.day = now.getDayOfMonth();
+    }
 }

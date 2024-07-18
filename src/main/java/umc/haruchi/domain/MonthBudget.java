@@ -2,6 +2,8 @@ package umc.haruchi.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 import umc.haruchi.domain.common.BaseEntity;
 
 import java.time.LocalDate;
@@ -11,6 +13,8 @@ import java.util.List;
 @Entity
 @Getter
 @Builder
+@DynamicUpdate
+@DynamicInsert
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MonthBudget extends BaseEntity {
@@ -36,6 +40,7 @@ public class MonthBudget extends BaseEntity {
     private Member member;
 
     @OneToMany(mappedBy = "monthBudget", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<DayBudget> dayBudgetList = new ArrayList<>();
 
     @PrePersist
