@@ -3,6 +3,8 @@ package umc.haruchi.domain.mapping;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 import umc.haruchi.domain.DayBudget;
 import umc.haruchi.domain.PullMinusClosing;
 import umc.haruchi.domain.PushPlusClosing;
@@ -14,6 +16,8 @@ import java.util.List;
 @Entity
 @Getter
 @Builder
+@DynamicUpdate
+@DynamicInsert
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class BudgetRedistribution extends BaseEntity {

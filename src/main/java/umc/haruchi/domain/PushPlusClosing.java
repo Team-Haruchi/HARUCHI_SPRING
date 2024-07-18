@@ -3,6 +3,8 @@ package umc.haruchi.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 import umc.haruchi.domain.common.BaseEntity;
 import umc.haruchi.domain.enums.RedistributionOption;
 import umc.haruchi.domain.mapping.BudgetRedistribution;
@@ -12,6 +14,8 @@ import java.time.LocalDate;
 @Entity
 @Getter
 @Builder
+@DynamicUpdate
+@DynamicInsert
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class PushPlusClosing extends BaseEntity {
