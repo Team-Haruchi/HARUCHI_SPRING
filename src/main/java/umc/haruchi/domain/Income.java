@@ -18,7 +18,7 @@ public class Income extends BaseEntity {
     @Column(nullable = false, columnDefinition = "bigint default 0")
     private Long incomeAmount;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "bigint default 0")
     private Long incomeCategory;
 
     @Column(nullable = true, length = 10)
