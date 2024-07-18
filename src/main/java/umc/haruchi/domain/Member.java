@@ -3,7 +3,7 @@ package umc.haruchi.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import umc.haruchi.domain.common.BaseEntity;
-import umc.haruchi.domain.enums.LoginStatus;
+import umc.haruchi.domain.enums.MemberStatus;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -33,8 +33,8 @@ public class Member extends BaseEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'F'")
-    private LoginStatus loginStatus;
+    @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'LOGIN'")
+    private MemberStatus memberStatus;
 
     @Column(nullable = true)
     private LocalDate inactiveDate;
