@@ -8,6 +8,7 @@ import umc.haruchi.domain.common.BaseEntity;
 import umc.haruchi.domain.enums.DayBudgetStatus;
 import umc.haruchi.domain.mapping.BudgetRedistribution;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,4 +48,10 @@ public class DayBudget extends BaseEntity {
 
     @OneToMany(mappedBy = "dayBudget", cascade = CascadeType.ALL)
     private List<Expenditure> expenditureList = new ArrayList<>();
+
+    @PrePersist
+    public void prePersist() {
+        LocalDate now = LocalDate.now();
+        this.day = now.getDayOfMonth();
+    }
 }
