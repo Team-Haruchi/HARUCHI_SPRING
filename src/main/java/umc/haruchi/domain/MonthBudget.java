@@ -40,6 +40,7 @@ public class MonthBudget extends BaseEntity {
     private Member member;
 
     @OneToMany(mappedBy = "monthBudget", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<DayBudget> dayBudgetList = new ArrayList<>();
 
     @PrePersist

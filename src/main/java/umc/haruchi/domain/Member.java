@@ -53,5 +53,6 @@ public class Member extends BaseEntity {
     private MemberToken memberToken;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<MonthBudget> monthBudgetList = new ArrayList<>();
 }
