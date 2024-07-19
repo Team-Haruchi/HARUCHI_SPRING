@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
 public class MemberRequestDTO {
 
@@ -15,36 +16,23 @@ public class MemberRequestDTO {
         private Long monthBudget;
 
         @NotBlank
-        @Size(min = 1, max = 5)
+        @Length(min = 1, max = 5)
+        @Pattern(
+                regexp = "[a-z]",
+                message = "닉네임은 1~5자의 영문 소문자, 숫자로 이루어져야 합니다."
+        )
         private String name;
 
         @NotBlank
-        @Size(min = 10, max = 20)
-        @Email
+        @Length(min = 11, max = 30)
+        @Email(message = "이메일 형식이 올바르지 않습니다.")
         private String email;
 
         @NotBlank
+        @Length(min = 4, max = 65)
         private String password;
-    }
 
-//    @Getter
-//    public static class EmailSendDTO {
-//
-//        @NotNull
-//        @Size(min = 10, max = 20)
-//        @Email
-//        private String email;
-//    }
-//
-//    @Getter
-//    public static class EmailVerifyDTO {
-//
-//        @NotNull
-//        @Size(min = 10, max = 20)
-//        @Email
-//        private String email;
-//
-//        @NotBlank
-//        private String code;
-//    }
+        @NotNull
+        private boolean verifiedEmail;
+    }
 }

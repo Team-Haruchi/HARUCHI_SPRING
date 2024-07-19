@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import umc.haruchi.apiPayload.ApiResponse;
@@ -36,7 +37,7 @@ public class MemberApiController {
     @Parameters({
             @Parameter(name = "email", description = "인증을 받을 메일 주소")
     })
-    public ApiResponse<MemberResponseDTO> sendEmail(@Valid @RequestParam("email") String email) throws Exception {
+    public ApiResponse<MemberResponseDTO> sendEmail(@Email(message = "이메일 형식이 올바르지 않습니다.") @RequestParam("email") String email) throws Exception {
         memberService.sendSimpleMessage(email);
         return ApiResponse.onSuccess(null);
     }
@@ -44,10 +45,10 @@ public class MemberApiController {
     @PostMapping("/signup/email/verify")
     @Operation(summary = "이메일 인증 확인 API", description = "이메일 인증 번호를 확인하는 API")
     @Parameters({
-            @Parameter(name = "email", description = "인증을 받을 메일 주소"),
+            @Parameter(name = "email", description = "인증을 받은 메일 주소"),
             @Parameter(name = "code", description = "받은 인증 코드")
     })
-    public ApiResponse<MemberResponseDTO> verifyEmail(@Valid @RequestParam("email") String email,
+    public ApiResponse<MemberResponseDTO> verifyEmail(@Email(message = "이메일 형식이 올바르지 않습니다.") @RequestParam("email") String email,
                                                       @RequestParam("code") String code) throws Exception {
         String authCode = memberService.getVerificationCode(email);
         memberService.verificationEmail(code, authCode);
