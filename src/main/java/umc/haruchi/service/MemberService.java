@@ -41,13 +41,18 @@ public class MemberService {
     @Transactional
     public Member joinMember(MemberRequestDTO.MemberJoinDTO request) throws Exception {
 
+        if (!request.isVerifiedEmail()) {
+            throw new MemberHandler(ErrorStatus.NOT_VERIFIED_EMAIL);
+        }
+
         if (memberRepository.findByName(request.getName()).isPresent()) {
             throw new MemberHandler(ErrorStatus.EXISTED_NAME);
         }
 
-//        if (memberRepository.findByEmail(request.getEmail()).isPresent()) {
-//            throw new Exception("이미 존재하는 이메일입니다.");
-//        }
+        // 이메일 인증 요청에서 미리 처리하니까 삭제해도 됨
+        if (memberRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new Exception("이미 존재하는 이메일입니다.");
+        }
 
         Member newMember = MemberConverter.toMember(request);
         newMember.encodePassword(encoder.encode(newMember.getPassword()));
@@ -105,7 +110,7 @@ public class MemberService {
 
     public void verificationEmail(String code, String savedCode) throws Exception {
         if (!code.equals(savedCode)) {
-            throw new Exception("인증 번호가 일치하지 않습니다.");
+            throw new MemberHandler(ErrorStatus.EXISTED_EMAIL);
         }
     }
 }

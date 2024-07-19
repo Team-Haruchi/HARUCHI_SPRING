@@ -18,7 +18,10 @@ public enum ErrorStatus implements BaseErrorCode {
 
     //Member 관련 에러
     EXISTED_NAME(HttpStatus.BAD_REQUEST, "MEMBER4001", "이미 있는 닉네임입니다."),
-    EXISTED_EMAIL(HttpStatus.BAD_REQUEST, "MEMBER4002", "이미 있는 이메일입니다.");
+    EXISTED_EMAIL(HttpStatus.BAD_REQUEST, "MEMBER4002", "이미 있는 이메일입니다."),
+    NOT_VERIFIED_EMAIL(HttpStatus.BAD_REQUEST, "MEMBER4003", "이메일이 검증되지 않았습니다."),
+    EMAIL_VERIFY_FAILED(HttpStatus.BAD_REQUEST, "MEMBER4004", "인증 번호가 일치하지 않습니다."),
+    ;
 
     //플젝 진행하며 추가하기..
 
