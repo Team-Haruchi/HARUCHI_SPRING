@@ -13,12 +13,16 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: haruchi@gmail.com
+    username: kej431003@gmail.com # 아래 앱 비밀번호를 생성한 이메일 입력
     password: ${MAIL_PASSWORD}
     properties:
-      mail.smtp.auth: true
-      mail.smtp.timeout: 5000
-      mail.smtp.starttls.enable: true
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          timeout: 5000
 
   data:
     redis:
@@ -26,4 +30,4 @@ spring:
       port: 6379
 
   cache:
-    type: redis
+    type: redis #redis를 설치하고 redis-cli.exe를 실행해야 함
