@@ -13,6 +13,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import umc.haruchi.apiPayload.code.status.ErrorStatus;
+import umc.haruchi.apiPayload.exception.handler.MemberHandler;
 import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.domain.Member;
 import umc.haruchi.repository.MemberRepository;
@@ -40,7 +42,7 @@ public class MemberService {
     public Member joinMember(MemberRequestDTO.MemberJoinDTO request) throws Exception {
 
         if (memberRepository.findByName(request.getName()).isPresent()) {
-            throw new Exception("이미 존재하는 닉네임입니다.");
+            throw new MemberHandler(ErrorStatus.EXISTED_NAME);
         }
 
 //        if (memberRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -56,7 +58,7 @@ public class MemberService {
     public void checkDuplicatedEmail(String email) throws Exception {
         Optional<Member> member = memberRepository.findByEmail(email);
         if (member.isPresent()) {
-            throw new Exception("이미 가입된 이메일입니다.");
+            throw new MemberHandler(ErrorStatus.EXISTED_EMAIL);
         }
     }
 
