@@ -1,8 +1,14 @@
 spring:
+  #datasource:
+    #url: ${DEV_MYSQL_URL}
+    #username: ${DEV_MYSQL_USERNAME}
+    #password: ${DEV_MYSQL_PASSWORD}
+    #driver-class-name: com.mysql.cj.jdbc.Driver
+
   datasource:
-    url: ${DEV_MYSQL_URL}
-    username: ${DEV_MYSQL_USERNAME}
-    password: ${DEV_MYSQL_PASSWORD}
+    url: jdbc:mysql://localhost:3306/haruchi
+    username: root
+    password: mysql
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -31,3 +37,7 @@ spring:
 
   cache:
     type: redis #redis를 설치하고 redis-cli.exe를 실행해야 함
+
+  security:
+    jwt:
+      secret: nR5cCI6IxpoNGY8ZVziIyMDIwMjJ9hbGciOyJzCJe8bGwv

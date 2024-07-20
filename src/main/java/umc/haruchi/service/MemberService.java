@@ -1,28 +1,29 @@
 package umc.haruchi.service;
 
 import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.apiPayload.code.status.ErrorStatus;
 import umc.haruchi.apiPayload.exception.handler.MemberHandler;
+import umc.haruchi.config.jwt.JwtTokenProvider;
 import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.domain.Member;
 import umc.haruchi.repository.MemberRepository;
 import umc.haruchi.web.dto.MemberRequestDTO;
+import umc.haruchi.web.dto.MemberResponseDTO;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -33,8 +34,9 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder encoder = new BCryptPasswordEncoder();
     private final JavaMailSender mailSender;
-    private final StringRedisTemplate stringRedisTemplate;
     private final RedisTemplate redisTemplate;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     public static int code;
 
@@ -113,4 +115,28 @@ public class MemberService {
             throw new MemberHandler(ErrorStatus.EXISTED_EMAIL);
         }
     }
+
+    public MemberResponseDTO.LoginJwtTokenDTO login(String email, String password) {
+
+        if (memberRepository.findByEmail(email).orElse(null) == null) {
+            throw new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND);
+        }
+
+        // Authentication 객체 생성
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
+
+        try {
+            Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+
+            // 검증된 인증 정보로 JWT token 생성
+            MemberResponseDTO.LoginJwtTokenDTO token = jwtTokenProvider.generateToken(authentication);
+
+
+            return token;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

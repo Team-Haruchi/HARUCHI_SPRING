@@ -20,7 +20,7 @@ import java.io.UnsupportedEncodingException;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/auth")
+@RequestMapping("/member")
 public class MemberApiController {
 
     private final MemberService memberService;
@@ -57,8 +57,9 @@ public class MemberApiController {
 
     @PostMapping("/login")
     @Operation(summary = "로그인 API", description = "로그인을 진행하는 API")
-    public ApiResponse<MemberResponseDTO.MemberJoinResultDTO> login(@Valid @RequestBody MemberRequestDTO member) {
-        return null;
+    public ApiResponse<MemberResponseDTO.LoginJwtTokenDTO> login(@Valid @RequestBody MemberRequestDTO.MemberLoginDTO request) {
+        MemberResponseDTO.LoginJwtTokenDTO token = memberService.login(request.getEmail(), request.getPassword());
+        return ApiResponse.onSuccess(token);
     }
 
     @PostMapping("/logout")
