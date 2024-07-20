@@ -10,3 +10,24 @@ spring:
       ddl-auto: update
     show-sql: true
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: kej431003@gmail.com # 아래 앱 비밀번호를 생성한 이메일 입력
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          timeout: 5000
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  cache:
+    type: redis #redis를 설치하고 redis-cli.exe를 실행해야 함

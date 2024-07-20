@@ -1,9 +1,14 @@
 package umc.haruchi.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.validator.constraints.Length;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import umc.haruchi.domain.common.BaseEntity;
 import umc.haruchi.domain.enums.MemberStatus;
 
@@ -30,20 +35,20 @@ public class Member extends BaseEntity {
     @Column(nullable = false, length = 5)
     private String name;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 30)
     private String email;
 
-    @Column(nullable = false, length = 15)
+    @Column(nullable = false, length = 65)
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'LOGIN'")
+    @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'LOGOUT'")
     private MemberStatus memberStatus;
 
     @Column(nullable = true)
     private LocalDate inactiveDate;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDate lastLoginDate;
 
     @Column(nullable = false, columnDefinition = "bigint default 0")
@@ -55,4 +60,8 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     @Builder.Default
     private List<MonthBudget> monthBudgetList = new ArrayList<>();
+
+    public void encodePassword(String password) {
+        this.password = password;
+    }
 }
