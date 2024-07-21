@@ -1,10 +1,15 @@
 package umc.haruchi.config.login.jwt;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
+import umc.haruchi.apiPayload.exception.handler.JwtExpiredHandler;
+import umc.haruchi.apiPayload.exception.handler.JwtInvalidHandler;
 import umc.haruchi.config.login.auth.MemberDetail;
 import umc.haruchi.config.redis.RedisUtil;
 
@@ -16,39 +21,31 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Component
-public class JwtUtil {
+public class JwtUtil implements InitializingBean {
 
-    private final SecretKey secretKey;
-    private final Long accessExpMs;
-    private final Long refreshExpMs;
-    private final RedisUtil redisUtil;
+    @Value("${spring.jwt.secret}")
+    private String secret;
+    private static SecretKey secretKey;
+    private static final Long expireMs = 1000L * 60 * 60 * 24 * 7;
 
-    public JwtUtil(
-            @Value("${spring.jwt.secret}") String secret,
-            @Value("${spring.jwt.token.access-expiration-time}") Long access,
-            @Value("${spring.jwt.token.refresh-expiration-time}") Long refresh,
-            RedisUtil redis) {
-        secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8),
-                Jwts.SIG.HS256.key().build().getAlgorithm());
-        accessExpMs = access;
-        refreshExpMs = refresh;
-        redisUtil = redis;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // jwt 토큰을 입력 받아 토큰의 페이로드에서 사용자 이름(Username) 추출
-    public String getUserName(String token) throws SignatureException {
+    public static String getEmail(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
-                .getSubject();
+                .get("email", String.class);
     }
 
-    // jwt 토큰을 입력 받아 토큰의 페이로드에서 사용자 이름(roll) 추출
-    public String getRoles(String token) throws SignatureException {
+    public static String getRole(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
@@ -57,60 +54,161 @@ public class JwtUtil {
                 .get("role", String.class);
     }
 
-    // jwt 토큰의 페이로드에서 만료 시간을 검색, 밀리초 단위의 Long 값으로 반환
-    public long getExpTime(String token) {
+    public static Boolean isExpired(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
                 .getExpiration()
-                .getTime();
+                .before(new Date());
     }
 
-    // 토큰 발급
-    public String tokenProvider(MemberDetail memberDetail, Instant expiration) {
-        Instant issuedAt = Instant.now();
-
-        String authorities = memberDetail.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
-
+    public static String createJwt(Long memberId, String email, String role){
         return Jwts.builder()
-                .header()
-                .add("typ", "JWT")
-                .and()
-                .subject(memberDetail.getUsername())
-                .claim("role", authorities)
-                .issuedAt(Date.from(issuedAt))
-                .expiration(Date.from(expiration))
+                .claim("memberId", memberId)
+                .claim("email", email)
+                .claim("role",role)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis()+expireMs))
                 .signWith(secretKey)
                 .compact();
     }
 
-    // memberDetail 객체에 대해 새로운 jwt 액세스 토큰 생성
-    public String createJwtAccessToken(MemberDetail memberDetail) {
-        Instant expiration = Instant.now().plusSeconds(accessExpMs);
-
-        return tokenProvider(memberDetail, expiration);
+    public static String getPassword(String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("password", String.class);
     }
 
-    // memberDetail 객체에 대해 새로운 jwt 리프레시 토큰 생성
-    public String createJwtRefreshToken(MemberDetail memberDetail) {
-        Instant expiration = Instant.now().plusSeconds(refreshExpMs);
-
-        String refreshToken = tokenProvider(memberDetail, expiration);
-
-        // 레디스에 저장
-        redisUtil.save(
-                memberDetail.getUsername(),
-                refreshToken,
-                refreshExpMs,
-                TimeUnit.MILLISECONDS
-        );
-
-        return refreshToken;
+    public static String createJwt(String email, String password, String role){
+        return Jwts.builder()
+                .claim("password",password)
+                .claim("email", email)
+                .claim("role", role)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis()+expireMs))
+                .signWith(secretKey)
+                .compact();
     }
+
+    public static boolean validateAccessToken(String accessToken) {
+        try {
+            return Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(accessToken)
+                    .getPayload()
+                    .getExpiration()
+                    .before(new Date());
+        } catch (ExpiredJwtException e) {
+            throw new JwtExpiredHandler("Expired Token Exception");
+        } catch (UnsupportedJwtException | SecurityException | MalformedJwtException | NullPointerException e) {
+            throw new JwtInvalidHandler("Invalid Token Exception");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+}
+
+//@Slf4j
+//@Component
+//public class JwtUtil {
+
+//    private final SecretKey secretKey;
+//    private final Long accessExpMs;
+//    private final Long refreshExpMs;
+//    private final RedisUtil redisUtil;
+//
+//    public JwtUtil(
+//            @Value("${spring.jwt.secret}") String secret,
+//            @Value("${spring.jwt.token.access-expiration-time}") Long access,
+//            @Value("${spring.jwt.token.refresh-expiration-time}") Long refresh,
+//            RedisUtil redis) {
+//        secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8),
+//                Jwts.SIG.HS256.key().build().getAlgorithm());
+//        accessExpMs = access;
+//        refreshExpMs = refresh;
+//        redisUtil = redis;
+//    }
+//
+//    // jwt 토큰을 입력 받아 토큰의 페이로드에서 사용자 이름(Username) 추출
+//    public String getUserName(String token) throws SignatureException {
+//        return Jwts.parser()
+//                .verifyWith(secretKey)
+//                .build()
+//                .parseSignedClaims(token)
+//                .getPayload()
+//                .getSubject();
+//    }
+//
+//    // jwt 토큰을 입력 받아 토큰의 페이로드에서 사용자 이름(roll) 추출
+//    public String getRoles(String token) throws SignatureException {
+//        return Jwts.parser()
+//                .verifyWith(secretKey)
+//                .build()
+//                .parseSignedClaims(token)
+//                .getPayload()
+//                .get("role", String.class);
+//    }
+//
+//    // jwt 토큰의 페이로드에서 만료 시간을 검색, 밀리초 단위의 Long 값으로 반환
+//    public long getExpTime(String token) {
+//        return Jwts.parser()
+//                .verifyWith(secretKey)
+//                .build()
+//                .parseSignedClaims(token)
+//                .getPayload()
+//                .getExpiration()
+//                .getTime();
+//    }
+//
+//    // 토큰 발급
+//    public String tokenProvider(MemberDetail memberDetail, Instant expiration) {
+//        Instant issuedAt = Instant.now();
+//
+//        String authorities = memberDetail.getAuthorities().stream()
+//                .map(GrantedAuthority::getAuthority)
+//                .collect(Collectors.joining(","));
+//
+//        return Jwts.builder()
+//                .header()
+//                .add("typ", "JWT")
+//                .and()
+//                .subject(memberDetail.getUsername())
+//                .claim("role", authorities)
+//                .issuedAt(Date.from(issuedAt))
+//                .expiration(Date.from(expiration))
+//                .signWith(secretKey)
+//                .compact();
+//    }
+//
+//    // memberDetail 객체에 대해 새로운 jwt 액세스 토큰 생성
+//    public String createJwtAccessToken(MemberDetail memberDetail) {
+//        Instant expiration = Instant.now().plusSeconds(accessExpMs);
+//
+//        return tokenProvider(memberDetail, expiration);
+//    }
+//
+//    // memberDetail 객체에 대해 새로운 jwt 리프레시 토큰 생성
+//    public String createJwtRefreshToken(MemberDetail memberDetail) {
+//        Instant expiration = Instant.now().plusSeconds(refreshExpMs);
+//
+//        String refreshToken = tokenProvider(memberDetail, expiration);
+//
+//        // 레디스에 저장
+//        redisUtil.save(
+//                memberDetail.getUsername(),
+//                refreshToken,
+//                refreshExpMs,
+//                TimeUnit.MILLISECONDS
+//        );
+//
+//        return refreshToken;
+//    }
 
 //    private final Key key;
 //    private final RedisUtil redisUtil;
@@ -217,4 +315,4 @@ public class JwtUtil {
 //            return e.getClaims();
 //        }
 //    }
-}
+//}

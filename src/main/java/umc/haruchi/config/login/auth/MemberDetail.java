@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,26 +22,21 @@ public class MemberDetail implements UserDetails {
 
     private final Member member;
 
-    // 해당 유저의 권한을 리턴하는 곳
+    public static MemberDetail createMemberDetail(Member member) {
+        return new MemberDetail(member);
+    }
+
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        Collection<GrantedAuthority> collection = new ArrayList<>();
-
-        collection.add(new GrantedAuthority() {
+        Collection<GrantedAuthority> collect = new ArrayList<>();
+        collect.add(new GrantedAuthority() {
             @Override
             public String getAuthority() {
-                return member.getRole();
+                return null;
             }
         });
-
-        return collection;
-//            List<GrantedAuthority> authorities = new ArrayList<>();
-//
-//            // 역할 목록
-//            GrantedAuthority roleAuthority = new SimpleGrantedAuthority("ROLE_USER");
-//            authorities.add(roleAuthority);
-//
-//            return authorities;
+        return collect;
     }
 
     @Override
@@ -70,8 +66,81 @@ public class MemberDetail implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        // 자동 로그아웃?
-        //if (Timestamp.valueOf(LocalDateTime.now())- Timestamp.valueOf(member.getLastLoginDate()) > 5)
         return true;
     }
 }
+
+//@RequiredArgsConstructor
+//public class MemberDetail implements UserDetails {
+//
+////    private final Member member;
+//    private String email;
+//    private String password;
+//    private String role;
+//
+//    public static UserDetails of(Member member) {
+//        return MemberDetail.builder()
+//                .email(member.getEmail())
+//                .password(member.getPassword())
+//                .role(member.getRole())
+//                .build();
+//    }
+//
+//    @Override
+//    public Collection<? extends GrantedAuthority> getAuthorities() {
+//        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
+//        return Collections.singleton(authority);
+//    }
+//
+//    @Override
+//    public String getPassword() {
+//        return password;
+//    }
+//
+//    @Override
+//    public String getUsername() {
+//        return email    ;
+//    }
+//
+//    @Override
+//    public boolean isAccountNonExpired() {
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean isAccountNonLocked() {
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean isCredentialsNonExpired() {
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean isEnabled() {
+//        return true;
+//    }
+//    // 해당 유저의 권한을 리턴하는 곳
+//    @Override
+//    public Collection<? extends GrantedAuthority> getAuthorities() {
+//        Collection<GrantedAuthority> collection = new ArrayList<>();
+//
+//        collection.add(new GrantedAuthority() {
+//            @Override
+//            public String getAuthority() {
+//                return member.getRole();
+//            }
+//        });
+//
+//        return collection;
+//            List<GrantedAuthority> authorities = new ArrayList<>();
+//
+//            // 역할 목록
+//            GrantedAuthority roleAuthority = new SimpleGrantedAuthority("ROLE_USER");
+//            authorities.add(roleAuthority);
+//
+//            return authorities;
+//    }
+//
+//}

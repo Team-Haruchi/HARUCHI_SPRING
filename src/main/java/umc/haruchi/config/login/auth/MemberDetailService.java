@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import umc.haruchi.domain.Member;
 import umc.haruchi.repository.MemberRepository;
 
+import java.util.Optional;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -19,13 +21,22 @@ public class MemberDetailService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-        Member member = memberRepository.findByEmail(email).orElse(null);
+        log.info("loadUserByUsername 함수 실행");
 
-        if (email != null) {
-            return new MemberDetail(member);
-        }
+        Optional<Member> member = memberRepository.findByEmail(email);
+        if (member.isEmpty()) throw new UsernameNotFoundException("해당 유저를 찾을 수 없습니다.");
+        return MemberDetail.createMemberDetail(member.get());
 
-        throw new UsernameNotFoundException("해당 회원을 찾을 수 없습니다.");
+//        Member member = memberRepository.findByEmail(email)
+//                .orElseThrow(() -> new UsernameNotFoundException("Invalid authentication!"));
+//        return MemberDetail.of(member);
+//        Member member = memberRepository.findByEmail(email).orElse(null);
+//
+//        if (email != null) {
+//            return new MemberDetail(member);
+//        }
+//
+//        throw new UsernameNotFoundException("해당 회원을 찾을 수 없습니다.");
 //        log.info(">>회원 정보 찾기, {}", email);
 //
 //        return memberRepository.findByEmail(email)
