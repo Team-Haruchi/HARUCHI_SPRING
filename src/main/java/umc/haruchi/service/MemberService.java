@@ -11,12 +11,15 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.apiPayload.code.status.ErrorStatus;
 import umc.haruchi.apiPayload.exception.handler.MemberHandler;
+import umc.haruchi.config.login.auth.MemberDetail;
 import umc.haruchi.config.login.jwt.JwtUtil;
 import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.domain.Member;
@@ -24,6 +27,7 @@ import umc.haruchi.repository.MemberRepository;
 import umc.haruchi.web.dto.MemberRequestDTO;
 import umc.haruchi.web.dto.MemberResponseDTO;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -33,11 +37,11 @@ import java.util.concurrent.TimeUnit;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private final PasswordEncoder encoder;
+    private final BCryptPasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
     private final RedisTemplate redisTemplate;
-    private final JwtUtil jwtUtil;
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
+//    private final JwtUtil jwtUtil;
+//    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     public static int code;
 
@@ -58,7 +62,10 @@ public class MemberService {
         }
 
         Member newMember = MemberConverter.toMember(request);
-        newMember.encodePassword(encoder.encode(newMember.getPassword()));
+        newMember.encodePassword(passwordEncoder.encode(request.getPassword()));
+        System.out.println(newMember.getPassword());
+//        newMember.encodePassword(encoder.encode(newMember.getPassword()));
+//        newMember.encodePassword(newMember.getPassword());
         return memberRepository.save(newMember);
     }
 
@@ -117,34 +124,71 @@ public class MemberService {
         }
     }
 
-    public MemberResponseDTO.LoginJwtTokenDTO login(MemberRequestDTO.MemberLoginDTO request) {
+    public MemberResponseDTO.LoginJwtTokenDTO login(MemberRequestDTO.MemberLoginDTO loginDto) {
+        String email = loginDto.getEmail();
+        System.out.println(passwordEncoder.encode(loginDto.getPassword()));
 
-        String email = request.getEmail();
-        String password = request.getPassword();
-        Member member = memberRepository.findByEmail(email).orElse(null);
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        if (member == null) {
-            throw new UsernameNotFoundException("이메일이 존재하지 않습니다.");
+        if (!passwordEncoder.matches(loginDto.getPassword(), member.getPassword())) {
+            throw new MemberHandler(ErrorStatus.PASSWORD_NOT_MATCH);
         }
 
-        if (!encoder.matches(password, member.getPassword())) {
-            throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
-        }
+        String accessToken = JwtUtil.createJwt(member.getId(), member.getEmail(), null);
 
-//        // Login email/password를 기반으로 Authentication 객체 생성
-//        UsernamePasswordAuthenticationToken authenticationToken = request.toAuthenticationToken();
-//
-//        // 실제 검증 (사용자 비밀번호 체크)이 이루어지는 부분
-//        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-//
-//        // 검증된 인증 정보로 JWT token 생성
-//        MemberResponseDTO.LoginJwtTokenDTO token = jwtUtil.generateToken(authentication);
-//
-//        redisTemplate.opsForValue()
-//                .set("RT:" + authentication.getName(), token.getRefreshToken(), token.getRefreshTokenExpirationTime(), TimeUnit.MILLISECONDS);
-//
-//        return token;
-        return null;
+        LocalDateTime expiredAt = LocalDateTime.now().plusDays(7);
+
+        return MemberResponseDTO.LoginJwtTokenDTO.builder()
+                .accessToken(accessToken)
+                .accessTokenExpiresAt(expiredAt)
+                .build();
     }
 
+//    public MemberResponseDTO.LoginJwtTokenDTO login(MemberRequestDTO.MemberLoginDTO request) {
+//
+//        String email = request.getEmail();
+//        String password = request.getPassword();
+//        Member member = memberRepository.findByEmail(email).orElse(null);
+//
+//        if (member == null) {
+//            throw new UsernameNotFoundException("이메일이 존재하지 않습니다.");
+//        }
+//
+//        if (!encoder.matches(password, member.getPassword())) {
+//            throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
+//        }
+//
+////        // Login email/password를 기반으로 Authentication 객체 생성
+////        UsernamePasswordAuthenticationToken authenticationToken = request.toAuthenticationToken();
+////
+////        // 실제 검증 (사용자 비밀번호 체크)이 이루어지는 부분
+////        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+////
+////        // 검증된 인증 정보로 JWT token 생성
+////        MemberResponseDTO.LoginJwtTokenDTO token = jwtUtil.generateToken(authentication);
+////
+////        redisTemplate.opsForValue()
+////                .set("RT:" + authentication.getName(), token.getRefreshToken(), token.getRefreshTokenExpirationTime(), TimeUnit.MILLISECONDS);
+////
+////        return token;
+//        return null;
+//    }
+
+//    public MemberResponseDTO.LoginJwtTokenDTO login(MemberRequestDTO.MemberLoginDTO request) {
+//        try {
+//            Authentication authentication = authenticationManagerBuilder
+//                    .getObject().authenticate(new UsernamePasswordAuthenticationToken((request.getEmail()), request.getPassword()));
+//
+//            MemberDetail memberDetail = (MemberDetail) authentication.getPrincipal();
+//
+//            return new MemberResponseDTO.LoginJwtTokenDTO()
+//                    .builder()
+//                    .accessToken(jwtUtil.createJwtAccessToken(memberDetail))
+//                    .build();
+//
+//        } catch (AuthenticationException e) {
+//            throw new MemberHandler(ErrorStatus.INVALID_LOGIN_PARAMETER);
+//        }
+//    }
 }

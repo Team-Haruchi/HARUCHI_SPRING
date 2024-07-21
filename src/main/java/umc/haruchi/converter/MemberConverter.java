@@ -1,5 +1,6 @@
 package umc.haruchi.converter;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import umc.haruchi.domain.Member;
@@ -8,16 +9,17 @@ import umc.haruchi.web.dto.MemberResponseDTO;
 
 import java.time.LocalDateTime;
 
+@RequiredArgsConstructor
 public class MemberConverter {
 
-    private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+//    private static final BCryptPasswordEncoder passwordEncoder;
 
     public static Member toMember(MemberRequestDTO.MemberJoinDTO request) {
         return Member.builder()
                 .monthBudget(request.getMonthBudget())
                 .name(request.getName())
                 .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
+//                .password(passwordEncoder.encode(request.getPassword()))
                 .build();
     }
 

@@ -62,7 +62,7 @@ public class MemberApiController {
     public ApiResponse<MemberResponseDTO.LoginJwtTokenDTO> login(@Valid @RequestBody MemberRequestDTO.MemberLoginDTO request) {
         MemberResponseDTO.LoginJwtTokenDTO token = memberService.login(request);
         log.info("request email = {}, password = {}", request.getEmail(), request.getPassword());
-        log.info("jwtToken accesstoken = {}, refreshtoken = {}", token.getAccessToken(), token.getRefreshToken());
+        //log.info("jwtToken accesstoken = {}, refreshtoken = {}", token.getAccessToken(), token.getRefreshToken());
         return ApiResponse.onSuccess(token);
     }
 

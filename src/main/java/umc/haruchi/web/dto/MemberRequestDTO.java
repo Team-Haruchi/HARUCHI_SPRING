@@ -51,8 +51,8 @@ public class MemberRequestDTO {
         @Length(min = 4, max = 65)
         private String password;
 
-        public UsernamePasswordAuthenticationToken toAuthenticationToken() {
-            return new UsernamePasswordAuthenticationToken(email, password);
-        }
+//        public UsernamePasswordAuthenticationToken toAuthenticationToken() {
+//            return new UsernamePasswordAuthenticationToken(email, password);
+//        }
     }
 }
