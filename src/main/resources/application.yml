@@ -38,6 +38,8 @@ spring:
   cache:
     type: redis #redis를 설치하고 redis-cli.exe를 실행해야 함
 
-  security:
-    jwt:
-      secret: nR5cCI6IxpoNGY8ZVziIyMDIwMjJ9hbGciOyJzCJe8bGwv
+  jwt:
+    secret: nR5cCI6IxpoNGY8ZVziIyMDIwMjJ9hbGciOyJzCJe8bGwv
+    token:
+      access-expiration-time: 3600000
+      refresh-expiration-time: 86400000

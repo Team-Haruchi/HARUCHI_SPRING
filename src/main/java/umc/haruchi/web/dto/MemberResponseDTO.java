@@ -23,10 +23,10 @@ public class MemberResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class LoginJwtTokenDTO {
-        private String grantType;
+        //private String grantType;
         private String accessToken;
         private String refreshToken;
-        private Long refreshTokenExpirationTime;
+        //private Long refreshTokenExpirationTime;
     }
 
 }

@@ -7,16 +7,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.apiPayload.code.status.ErrorStatus;
 import umc.haruchi.apiPayload.exception.handler.MemberHandler;
-import umc.haruchi.config.jwt.JwtTokenProvider;
+import umc.haruchi.config.login.jwt.JwtUtil;
 import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.domain.Member;
 import umc.haruchi.repository.MemberRepository;
@@ -32,10 +33,10 @@ import java.util.concurrent.TimeUnit;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private final PasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder encoder;
     private final JavaMailSender mailSender;
     private final RedisTemplate redisTemplate;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtUtil jwtUtil;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     public static int code;
@@ -53,7 +54,7 @@ public class MemberService {
 
         // 이메일 인증 요청에서 미리 처리하니까 삭제해도 됨
         if (memberRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new Exception("이미 존재하는 이메일입니다.");
+            throw new MemberHandler(ErrorStatus.EXISTED_EMAIL);
         }
 
         Member newMember = MemberConverter.toMember(request);
@@ -112,30 +113,37 @@ public class MemberService {
 
     public void verificationEmail(String code, String savedCode) throws Exception {
         if (!code.equals(savedCode)) {
-            throw new MemberHandler(ErrorStatus.EXISTED_EMAIL);
+            throw new MemberHandler(ErrorStatus.EMAIL_VERIFY_FAILED);
         }
     }
 
-    public MemberResponseDTO.LoginJwtTokenDTO login(String email, String password) {
+    public MemberResponseDTO.LoginJwtTokenDTO login(MemberRequestDTO.MemberLoginDTO request) {
 
-        if (memberRepository.findByEmail(email).orElse(null) == null) {
-            throw new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND);
+        String email = request.getEmail();
+        String password = request.getPassword();
+        Member member = memberRepository.findByEmail(email).orElse(null);
+
+        if (member == null) {
+            throw new UsernameNotFoundException("이메일이 존재하지 않습니다.");
         }
 
-        // Authentication 객체 생성
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
-
-        try {
-            Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-
-            // 검증된 인증 정보로 JWT token 생성
-            MemberResponseDTO.LoginJwtTokenDTO token = jwtTokenProvider.generateToken(authentication);
-
-
-            return token;
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (!encoder.matches(password, member.getPassword())) {
+            throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
         }
+
+//        // Login email/password를 기반으로 Authentication 객체 생성
+//        UsernamePasswordAuthenticationToken authenticationToken = request.toAuthenticationToken();
+//
+//        // 실제 검증 (사용자 비밀번호 체크)이 이루어지는 부분
+//        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+//
+//        // 검증된 인증 정보로 JWT token 생성
+//        MemberResponseDTO.LoginJwtTokenDTO token = jwtUtil.generateToken(authentication);
+//
+//        redisTemplate.opsForValue()
+//                .set("RT:" + authentication.getName(), token.getRefreshToken(), token.getRefreshTokenExpirationTime(), TimeUnit.MILLISECONDS);
+//
+//        return token;
         return null;
     }
 

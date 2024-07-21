@@ -1,4 +1,4 @@
-package umc.haruchi.config.auth;
+package umc.haruchi.config.login.auth;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -8,35 +8,49 @@ import org.springframework.security.core.userdetails.UserDetails;
 import umc.haruchi.domain.Member;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Getter
 @RequiredArgsConstructor
 public class MemberDetail implements UserDetails {
 
     private final Member member;
 
+    // 해당 유저의 권한을 리턴하는 곳
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        List<GrantedAuthority> authorities = new ArrayList<>();
+        Collection<GrantedAuthority> collection = new ArrayList<>();
 
-        // 역할 목록
-        GrantedAuthority roleAuthority = new SimpleGrantedAuthority("ROLE_USER");
-        authorities.add(roleAuthority);
+        collection.add(new GrantedAuthority() {
+            @Override
+            public String getAuthority() {
+                return member.getRole();
+            }
+        });
 
-        return authorities;
+        return collection;
+//            List<GrantedAuthority> authorities = new ArrayList<>();
+//
+//            // 역할 목록
+//            GrantedAuthority roleAuthority = new SimpleGrantedAuthority("ROLE_USER");
+//            authorities.add(roleAuthority);
+//
+//            return authorities;
     }
 
     @Override
     public String getPassword() {
-        return this.member.getPassword();
+        return member.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return this.member.getEmail();
+        return member.getEmail();
     }
 
     @Override
@@ -56,6 +70,8 @@ public class MemberDetail implements UserDetails {
 
     @Override
     public boolean isEnabled() {
+        // 자동 로그아웃?
+        //if (Timestamp.valueOf(LocalDateTime.now())- Timestamp.valueOf(member.getLastLoginDate()) > 5)
         return true;
     }
 }

@@ -7,6 +7,7 @@ import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import umc.haruchi.apiPayload.ApiResponse;
 import umc.haruchi.apiPayload.code.status.SuccessStatus;
@@ -18,6 +19,7 @@ import umc.haruchi.web.dto.MemberResponseDTO;
 
 import java.io.UnsupportedEncodingException;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/member")
@@ -58,7 +60,9 @@ public class MemberApiController {
     @PostMapping("/login")
     @Operation(summary = "로그인 API", description = "로그인을 진행하는 API")
     public ApiResponse<MemberResponseDTO.LoginJwtTokenDTO> login(@Valid @RequestBody MemberRequestDTO.MemberLoginDTO request) {
-        MemberResponseDTO.LoginJwtTokenDTO token = memberService.login(request.getEmail(), request.getPassword());
+        MemberResponseDTO.LoginJwtTokenDTO token = memberService.login(request);
+        log.info("request email = {}, password = {}", request.getEmail(), request.getPassword());
+        log.info("jwtToken accesstoken = {}, refreshtoken = {}", token.getAccessToken(), token.getRefreshToken());
         return ApiResponse.onSuccess(token);
     }
 
