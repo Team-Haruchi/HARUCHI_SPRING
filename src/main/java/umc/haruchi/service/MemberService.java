@@ -60,6 +60,13 @@ public class MemberService {
     }
 
     @Transactional
+    public void checkPassword(String password, String verifyPassword) {
+        if (!password.equals(verifyPassword)) {
+            throw new MemberHandler(ErrorStatus.PASSWORD_NOT_MATCH);
+        }
+    }
+
+    @Transactional
     public void checkDuplicatedEmail(String email) throws Exception {
         Optional<Member> member = memberRepository.findByEmail(email);
         if (member.isPresent()) {
@@ -135,6 +142,7 @@ public class MemberService {
                 .accessTokenExpiresAt(expiredAt)
                 .build();
     }
+
 
     // 혹시 몰라 남겨둠
 //    public MemberResponseDTO.LoginJwtTokenDTO login(MemberRequestDTO.MemberLoginDTO request) {
