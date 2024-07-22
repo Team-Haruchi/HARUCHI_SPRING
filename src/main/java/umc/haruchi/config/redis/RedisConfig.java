@@ -30,7 +30,7 @@ public class RedisConfig {
         redisTemplate.setConnectionFactory(redisConnectionFactory());
         return redisTemplate;
     }
-
+// 아래 있는 걸 쓸 수도 있음
 //    @Bean
 //    public RedisTemplate<String, Object> redisTemplate() {
 //        RedisTemplate<String, Object> template = new RedisTemplate<>();

@@ -26,26 +26,5 @@ public class MemberDetailService implements UserDetailsService {
         Optional<Member> member = memberRepository.findByEmail(email);
         if (member.isEmpty()) throw new UsernameNotFoundException("해당 유저를 찾을 수 없습니다.");
         return MemberDetail.createMemberDetail(member.get());
-
-//        Member member = memberRepository.findByEmail(email)
-//                .orElseThrow(() -> new UsernameNotFoundException("Invalid authentication!"));
-//        return MemberDetail.of(member);
-//        Member member = memberRepository.findByEmail(email).orElse(null);
-//
-//        if (email != null) {
-//            return new MemberDetail(member);
-//        }
-//
-//        throw new UsernameNotFoundException("해당 회원을 찾을 수 없습니다.");
-//        log.info(">>회원 정보 찾기, {}", email);
-//
-//        return memberRepository.findByEmail(email)
-//                    .map(this::createUserDetails)
-//                    .orElseThrow(() -> new UsernameNotFoundException("해당 회원을 찾을 수 없습니다."));
-
     }
-
-//    private UserDetails createUserDetails(Member member) {
-//        return new MemberDetail(member);
-//    }
 }

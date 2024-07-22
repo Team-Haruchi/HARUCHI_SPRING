@@ -3,23 +3,14 @@ package umc.haruchi.config.login.jwt;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 import umc.haruchi.apiPayload.exception.handler.JwtExpiredHandler;
 import umc.haruchi.apiPayload.exception.handler.JwtInvalidHandler;
-import umc.haruchi.config.login.auth.MemberDetail;
-import umc.haruchi.config.redis.RedisUtil;
 
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Component
 public class JwtUtil implements InitializingBean {
@@ -68,7 +59,7 @@ public class JwtUtil implements InitializingBean {
         return Jwts.builder()
                 .claim("memberId", memberId)
                 .claim("email", email)
-                .claim("role",role)
+                .claim("role", role)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis()+expireMs))
                 .signWith(secretKey)
@@ -296,7 +287,7 @@ public class JwtUtil implements InitializingBean {
 //        return false;
 //    }
 //
-//    // 로그아웃용 - accessToken 만료시키기
+//    // 만료까지 남은 시간 구하기
 //    public Long getExpiration(String accessToken) {
 //
 //        // accessToken 남은 유효 시간

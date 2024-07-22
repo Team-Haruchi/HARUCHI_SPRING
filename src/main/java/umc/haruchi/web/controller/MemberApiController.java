@@ -3,26 +3,24 @@ package umc.haruchi.web.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
-import jakarta.mail.MessagingException;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import umc.haruchi.apiPayload.ApiResponse;
-import umc.haruchi.apiPayload.code.status.SuccessStatus;
 import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.domain.Member;
 import umc.haruchi.service.MemberService;
 import umc.haruchi.web.dto.MemberRequestDTO;
 import umc.haruchi.web.dto.MemberResponseDTO;
 
-import java.io.UnsupportedEncodingException;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/member")
+@Tag(name = "member", description = "회원 관련 API")
 public class MemberApiController {
 
     private final MemberService memberService;
@@ -61,9 +59,12 @@ public class MemberApiController {
     @Operation(summary = "로그인 API", description = "로그인을 진행하는 API")
     public ApiResponse<MemberResponseDTO.LoginJwtTokenDTO> login(@Valid @RequestBody MemberRequestDTO.MemberLoginDTO request) {
         MemberResponseDTO.LoginJwtTokenDTO token = memberService.login(request);
-        log.info("request email = {}, password = {}", request.getEmail(), request.getPassword());
-        //log.info("jwtToken accesstoken = {}, refreshtoken = {}", token.getAccessToken(), token.getRefreshToken());
         return ApiResponse.onSuccess(token);
+    }
+
+    @GetMapping("/test")
+    public String loginTest() {
+        return "login user";
     }
 
     @PostMapping("/logout")
