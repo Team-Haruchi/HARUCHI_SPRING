@@ -19,13 +19,17 @@ public class MemberToken extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String accessToken;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String refreshToken;
 
     @OneToOne
     @JoinColumn(name = "member_id")
     private Member member;
+
+    public void setAccessToken(String token) {
+        this.accessToken = token;
+    }
 }

@@ -4,19 +4,23 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import umc.haruchi.apiPayload.code.status.ErrorStatus;
 import umc.haruchi.apiPayload.exception.handler.JwtExpiredHandler;
 import umc.haruchi.apiPayload.exception.handler.JwtInvalidHandler;
+import umc.haruchi.apiPayload.exception.handler.MemberHandler;
 import umc.haruchi.config.login.auth.MemberDetailService;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class JwtUtil implements InitializingBean {
@@ -41,6 +45,28 @@ public class JwtUtil implements InitializingBean {
                 .parseSignedClaims(token)
                 .getPayload()
                 .get("email", String.class);
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token);
+            return true;
+        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+            log.info("잘못된 JWT 서명입니다.");
+            throw new MemberHandler(ErrorStatus.WRONG_TYPE_SIGNATURE);
+        } catch (ExpiredJwtException e) {
+            log.info("만료된 JWT 토큰입니다.");
+            throw new MemberHandler(ErrorStatus.TOKEN_EXPIRED);
+        } catch (UnsupportedJwtException e) {
+            log.info("지원되지 않는 JWT 토큰입니다.");
+            throw new MemberHandler(ErrorStatus.WRONG_TYPE_TOKEN);
+        } catch (IllegalArgumentException e) {
+            log.info("JWT 토큰이 잘못되었습니다.");
+            throw new MemberHandler(ErrorStatus.NOT_VALID_TOKEN);
+        }
     }
 
     public static String getRole(String token) {

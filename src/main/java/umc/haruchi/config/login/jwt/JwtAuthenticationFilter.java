@@ -29,6 +29,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final JwtTokenService jwtTokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -44,7 +45,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         try {
-            JwtUtil.validateAccessToken(token);
+            jwtUtil.validateToken(token);
+            JwtUtil.validateAccessToken(token); // 생략해도 될까?
 //            String email = JwtUtil.getEmail(token);
 //
 //            Member member = Member.builder().email(email).build();
@@ -53,6 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 //            Authentication authentication = new UsernamePasswordAuthenticationToken(memberDetail, null, memberDetail.getAuthorities());
             Authentication authentication = jwtUtil.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            jwtTokenService.checkExpired(token);
         } catch (JwtExpiredHandler e) {
             response.setContentType("application/json");
             ApiResponse<Object> apiResponse =

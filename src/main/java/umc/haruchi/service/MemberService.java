@@ -15,8 +15,10 @@ import umc.haruchi.apiPayload.exception.handler.MemberHandler;
 import umc.haruchi.config.login.jwt.JwtUtil;
 import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.domain.Member;
+import umc.haruchi.domain.MemberToken;
 import umc.haruchi.domain.enums.MemberStatus;
 import umc.haruchi.repository.MemberRepository;
+import umc.haruchi.repository.MemberTokenRepository;
 import umc.haruchi.web.dto.MemberRequestDTO;
 import umc.haruchi.web.dto.MemberResponseDTO;
 
@@ -33,6 +35,7 @@ public class MemberService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
     private final RedisTemplate redisTemplate;
+    private final MemberTokenRepository memberTokenRepository;
 
     public static int code;
 
@@ -143,6 +146,12 @@ public class MemberService {
 
         String accessToken = JwtUtil.createJwt(member.getId(), member.getEmail(), null, 1000L * 60 * 60 * 24 * 7);
         String refreshToken = JwtUtil.createJwt(member.getId(), member.getEmail(), null, 1000L * 60 * 60 * 24 * 14);
+        MemberToken token = MemberToken.builder()
+                .member(member)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+        memberTokenRepository.save(token);
 
         Long accessExpiredAt = JwtUtil.getExpiration(accessToken);
         Long refreshExpiredAt = JwtUtil.getExpiration(refreshToken);
