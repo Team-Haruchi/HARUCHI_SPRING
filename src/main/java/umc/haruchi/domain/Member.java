@@ -1,22 +1,15 @@
 package umc.haruchi.domain;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.validator.constraints.Length;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import umc.haruchi.domain.common.BaseEntity;
 import umc.haruchi.domain.enums.MemberStatus;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Entity
@@ -61,7 +54,7 @@ public class Member extends BaseEntity {
     private MemberToken memberToken;
 
     @Column(nullable = false, columnDefinition = "VARCHAR(5) DEFAULT 'USER'")
-    private String role; // ROLE_USER, ROLE_ADMIN
+    private String role; // USER, ADMIN -> 삭제할 수도 있음
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     @Builder.Default
@@ -71,10 +64,9 @@ public class Member extends BaseEntity {
         this.password = password;
     }
 
-    public List<String> getRoleList() {
-        if (!this.role.isEmpty()) {
-            return Arrays.asList(this.role.split(","));
-        }
-        return new ArrayList<>();
+    public void setMemberStatusLogin() {
+        this.memberStatus = MemberStatus.LOGIN;
+        this.lastLoginDate = LocalDateTime.now();
     }
+
 }

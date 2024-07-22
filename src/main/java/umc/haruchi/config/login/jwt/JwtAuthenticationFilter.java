@@ -1,42 +1,26 @@
 package umc.haruchi.config.login.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.filter.OncePerRequestFilter;
 import umc.haruchi.apiPayload.ApiResponse;
-import umc.haruchi.apiPayload.code.status.ErrorStatus;
 import umc.haruchi.apiPayload.exception.handler.JwtExpiredHandler;
 import umc.haruchi.apiPayload.exception.handler.JwtInvalidHandler;
 import umc.haruchi.config.login.auth.MemberDetail;
 import umc.haruchi.domain.Member;
-import umc.haruchi.web.dto.MemberRequestDTO;
-import umc.haruchi.web.dto.MemberResponseDTO;
 
 import java.io.IOException;
-import java.security.SignatureException;
 
 @Slf4j
 @Component
@@ -44,7 +28,8 @@ import java.security.SignatureException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String accessToken = request.getHeader("Authorization");
+//        String accessToken = request.getHeader("Authorization");
+        String accessToken = resolveToken(request);
         if (accessToken == null) {
             filterChain.doFilter(request, response);
             return;
@@ -61,19 +46,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (JwtExpiredHandler e) {
             response.setContentType("application/json");
             ApiResponse<Object> apiResponse =
-                    ApiResponse.onFailure(HttpStatus.NOT_FOUND.name(), "MEMBER4027", "유효한 JWT 토큰이 없습니다.");
+                    ApiResponse.onFailure(HttpStatus.NOT_FOUND.name(), "MEMBER4027", "Invalid token is not found.");
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.writeValue(response.getWriter(), apiResponse);
             return;
         } catch (JwtInvalidHandler e) {
             response.setContentType("application/json");
             ApiResponse<Object> apiResponse =
-                    ApiResponse.onFailure(HttpStatus.UNAUTHORIZED.name(), "MEMBER4022", "해당 토큰은 유효한 토큰이 아닙니다.");
+                    ApiResponse.onFailure(HttpStatus.UNAUTHORIZED.name(), "MEMBER4022", "Invalid token.");
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.writeValue(response.getWriter(), apiResponse);
             return;
         }
         filterChain.doFilter(request, response);
+
+    }
+        private String resolveToken(HttpServletRequest request) {
+
+        String bearerToken = request.getHeader("Authorization");
+
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) { // 띄어쓰기 삭제
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 
 

@@ -7,22 +7,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.apiPayload.code.status.ErrorStatus;
 import umc.haruchi.apiPayload.exception.handler.MemberHandler;
-import umc.haruchi.config.login.auth.MemberDetail;
 import umc.haruchi.config.login.jwt.JwtUtil;
 import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.domain.Member;
+import umc.haruchi.domain.enums.MemberStatus;
 import umc.haruchi.repository.MemberRepository;
 import umc.haruchi.web.dto.MemberRequestDTO;
 import umc.haruchi.web.dto.MemberResponseDTO;
@@ -40,32 +33,27 @@ public class MemberService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
     private final RedisTemplate redisTemplate;
-//    private final JwtUtil jwtUtil;
-//    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     public static int code;
 
     @Transactional
     public Member joinMember(MemberRequestDTO.MemberJoinDTO request) throws Exception {
 
+        // 이메일 인증 요청에서 미리 처리하니까 삭제해도 됨
+        checkDuplicatedEmail(request.getEmail());
+
+        // 이메일 인증 여부 확인
         if (!request.isVerifiedEmail()) {
             throw new MemberHandler(ErrorStatus.NOT_VERIFIED_EMAIL);
         }
 
-        if (memberRepository.findByName(request.getName()).isPresent()) {
-            throw new MemberHandler(ErrorStatus.EXISTED_NAME);
-        }
-
-        // 이메일 인증 요청에서 미리 처리하니까 삭제해도 됨
-        if (memberRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new MemberHandler(ErrorStatus.EXISTED_EMAIL);
-        }
+        // 중복돼도 괜찮아서 주석 처리
+//        if (memberRepository.findByName(request.getName()).isPresent()) {
+//            throw new MemberHandler(ErrorStatus.EXISTED_NAME);
+//        }
 
         Member newMember = MemberConverter.toMember(request);
         newMember.encodePassword(passwordEncoder.encode(request.getPassword()));
-        System.out.println(newMember.getPassword());
-//        newMember.encodePassword(encoder.encode(newMember.getPassword()));
-//        newMember.encodePassword(newMember.getPassword());
         return memberRepository.save(newMember);
     }
 
@@ -111,7 +99,7 @@ public class MemberService {
     }
 
     public void saveVerificationCode(String email, String code) {
-        redisTemplate.opsForValue().set(email, code, 3, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(email, code, 1, TimeUnit.MINUTES);
     }
 
     public String getVerificationCode(String email) {
@@ -126,10 +114,10 @@ public class MemberService {
 
     public MemberResponseDTO.LoginJwtTokenDTO login(MemberRequestDTO.MemberLoginDTO loginDto) {
         String email = loginDto.getEmail();
-        System.out.println(passwordEncoder.encode(loginDto.getPassword()));
 
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        member.setMemberStatusLogin();
 
         if (!passwordEncoder.matches(loginDto.getPassword(), member.getPassword())) {
             throw new MemberHandler(ErrorStatus.PASSWORD_NOT_MATCH);
@@ -140,11 +128,13 @@ public class MemberService {
         LocalDateTime expiredAt = LocalDateTime.now().plusDays(7);
 
         return MemberResponseDTO.LoginJwtTokenDTO.builder()
+                .grantType("Bearer")
                 .accessToken(accessToken)
                 .accessTokenExpiresAt(expiredAt)
                 .build();
     }
 
+    // 혹시 몰라 남겨둠
 //    public MemberResponseDTO.LoginJwtTokenDTO login(MemberRequestDTO.MemberLoginDTO request) {
 //
 //        String email = request.getEmail();
@@ -173,22 +163,5 @@ public class MemberService {
 ////
 ////        return token;
 //        return null;
-//    }
-
-//    public MemberResponseDTO.LoginJwtTokenDTO login(MemberRequestDTO.MemberLoginDTO request) {
-//        try {
-//            Authentication authentication = authenticationManagerBuilder
-//                    .getObject().authenticate(new UsernamePasswordAuthenticationToken((request.getEmail()), request.getPassword()));
-//
-//            MemberDetail memberDetail = (MemberDetail) authentication.getPrincipal();
-//
-//            return new MemberResponseDTO.LoginJwtTokenDTO()
-//                    .builder()
-//                    .accessToken(jwtUtil.createJwtAccessToken(memberDetail))
-//                    .build();
-//
-//        } catch (AuthenticationException e) {
-//            throw new MemberHandler(ErrorStatus.INVALID_LOGIN_PARAMETER);
-//        }
 //    }
 }
