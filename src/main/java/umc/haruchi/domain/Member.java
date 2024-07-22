@@ -31,14 +31,14 @@ public class Member extends BaseEntity {
     @Column(nullable = false, length = 5)
     private String name;
 
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false/*, length = 65*/)
+    @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'LOGOUT'")
+    @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'LOGOUT'") // LOGIN, LOGOUT, INACTIVE, DELETED
     private MemberStatus memberStatus;
 
     @Column(nullable = true)
@@ -67,6 +67,14 @@ public class Member extends BaseEntity {
     public void setMemberStatusLogin() {
         this.memberStatus = MemberStatus.LOGIN;
         this.lastLoginDate = LocalDateTime.now();
+    }
+
+    public void setMemberStatusLogout() {
+        this.memberStatus = MemberStatus.LOGOUT;
+    }
+
+    public void setMemberStatusInactive() {
+        this.memberStatus = MemberStatus.INACTIVE;
     }
 
 }
