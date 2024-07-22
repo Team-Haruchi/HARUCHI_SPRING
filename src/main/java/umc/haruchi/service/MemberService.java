@@ -117,7 +117,7 @@ public class MemberService {
 
     // 이메일 인증 번호 redis에 저장
     public void saveVerificationCode(String email, String code) {
-        redisTemplate.opsForValue().set(email, code, 1, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(email, code, 130, TimeUnit.SECONDS);
     }
 
     // 이메일 인증 번호 redis에서 얻기
@@ -144,7 +144,7 @@ public class MemberService {
             throw new MemberHandler(ErrorStatus.PASSWORD_NOT_MATCH);
         }
 
-        String accessToken = JwtUtil.createJwt(member.getId(), member.getEmail(), null, 1000L * 60 * 60 * 24 * 7);
+        String accessToken = JwtUtil.createJwt(member.getId(), member.getEmail(), null, 1000L * 60 * 30);
         String refreshToken = JwtUtil.createJwt(member.getId(), member.getEmail(), null, 1000L * 60 * 60 * 24 * 14);
         MemberToken token = MemberToken.builder()
                 .member(member)
