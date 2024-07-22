@@ -141,7 +141,7 @@ public class MemberService {
             throw new MemberHandler(ErrorStatus.PASSWORD_NOT_MATCH);
         }
 
-        String accessToken = JwtUtil.createJwt(member.getId(), member.getEmail(), null, 1000L * 60 * 30);
+        String accessToken = JwtUtil.createJwt(member.getId(), member.getEmail(), null, 1000L * 60 * 60 * 24 * 7);
         String refreshToken = JwtUtil.createJwt(member.getId(), member.getEmail(), null, 1000L * 60 * 60 * 24 * 14);
 
         Long accessExpiredAt = JwtUtil.getExpiration(accessToken);
