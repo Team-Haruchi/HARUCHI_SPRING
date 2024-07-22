@@ -27,6 +27,7 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtUtil jwtUtil;
+    private final JwtTokenService jwtTokenService;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -51,6 +52,7 @@ public class SecurityConfig {
                         configuration.setAllowedHeaders(Collections.singletonList("*"));
                         configuration.setMaxAge(3600L);
                         configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+                        configuration.addExposedHeader("Authorization");
                         return configuration;
                     }
                 }))
@@ -78,7 +80,7 @@ public class SecurityConfig {
 //                        .requestMatchers("/budget-redistribution/**").authenticated()
                         .anyRequest().permitAll())
 //                        .anyRequest().authenticated())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, jwtTokenService), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }

@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import umc.haruchi.apiPayload.ApiResponse;
+import umc.haruchi.config.login.jwt.JwtTokenService;
 import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.domain.Member;
 import umc.haruchi.service.MemberService;
@@ -24,6 +25,7 @@ import umc.haruchi.web.dto.MemberResponseDTO;
 public class MemberApiController {
 
     private final MemberService memberService;
+    private final JwtTokenService jwtTokenService;
 
     @PostMapping("/signup")
     @Operation(summary = "회원가입 API", description = "이메일 인증으로 회원가입을 진행하는 API")
@@ -79,6 +81,13 @@ public class MemberApiController {
     @GetMapping("/test")
     public String loginTest() {
         return "login user";
+    }
+
+    @PostMapping("/reissue") // 오류 발생 -> 헤더 인식 불가능
+    @Operation(summary = "액세스 토큰 재발급 API", description = "리프레시 토큰으로 액세스 토큰을 재발급하는 API")
+    public ApiResponse<String> refreshToken(@RequestParam String refreshToken) {
+        String accessToken = jwtTokenService.refresh(refreshToken);
+        return ApiResponse.onSuccess(accessToken);
     }
 
     @PostMapping("/logout")
