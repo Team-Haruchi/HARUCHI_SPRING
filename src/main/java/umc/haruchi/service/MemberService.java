@@ -137,7 +137,7 @@ public class MemberService {
         String email = loginDto.getEmail();
 
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new MemberHandler(ErrorStatus.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
         member.setMemberStatusLogin();
 
         if (!passwordEncoder.matches(loginDto.getPassword(), member.getPassword())) {
