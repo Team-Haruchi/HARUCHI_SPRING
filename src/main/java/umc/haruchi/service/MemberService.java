@@ -39,10 +39,12 @@ public class MemberService {
     @Transactional
     public Member joinMember(MemberRequestDTO.MemberJoinDTO request) throws Exception {
 
+        // 이용약관은 무조건 체크돼야 들어오므로 스킵함
+
         // 이메일 인증 요청에서 미리 처리하니까 삭제해도 됨
         checkDuplicatedEmail(request.getEmail());
 
-        // 이메일 인증 여부 확인
+        // 이메일 인증 여부 확인 - 프론트에서 해결해준다면 삭제해도 됨
         if (!request.isVerifiedEmail()) {
             throw new MemberHandler(ErrorStatus.NOT_VERIFIED_EMAIL);
         }
