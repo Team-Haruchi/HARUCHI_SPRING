@@ -21,6 +21,13 @@ public enum ErrorStatus implements BaseErrorCode {
     EXISTED_EMAIL(HttpStatus.BAD_REQUEST, "MEMBER4002", "이미 있는 이메일입니다."),
     NOT_VERIFIED_EMAIL(HttpStatus.BAD_REQUEST, "MEMBER4003", "이메일이 검증되지 않았습니다."),
     EMAIL_VERIFY_FAILED(HttpStatus.BAD_REQUEST, "MEMBER4004", "인증 번호가 일치하지 않습니다."),
+    NO_MEMBER_EXIST(HttpStatus.NOT_FOUND, "MEMBER4005", "존재하지 않는 회원입니다."),
+
+    // MonthBudget 관련 에러
+    NOT_MONTH_BUDGET(HttpStatus.NOT_FOUND, "MONTHBUDGET4001", "한 달 예산이 존재하지 않습니다."),
+
+    // DayBudget 관련 에러
+    NOT_DAY_BUDGET(HttpStatus.NOT_FOUND, "DAYBUDGET4001", "하루 예산이 존재하지 않습니다."),
     ;
 
     //플젝 진행하며 추가하기..
