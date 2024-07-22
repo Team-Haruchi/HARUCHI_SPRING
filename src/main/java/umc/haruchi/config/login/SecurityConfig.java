@@ -26,6 +26,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final JwtUtil jwtUtil;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -63,17 +64,21 @@ public class SecurityConfig {
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                         .accessDeniedHandler(jwtAccessDeniedHandler))
 
+                // 런칭 시 Controller URL 3개 풀기 + anyRequest()는 authenticated()로 두기 (위에 거 주석 처리, 아래 거 주석 해제)
                 .authorizeHttpRequests((request) -> request
                         .requestMatchers("/member/signup/**").permitAll()
                         .requestMatchers("/member/login").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/member/logout").authenticated()
                         .requestMatchers("/member/delete").authenticated()
                         .requestMatchers("/member/test").authenticated()
-//                        .requestMatchers("/dayBudget/**").authenticated()
-//                        .requestMatchers("/monthBudget/**").authenticated()
-//                        .requestMatchers("/budgetRedistribution/**").authenticated()
+//                        .requestMatchers("/daily-budget/**").authenticated()
+//                        .requestMatchers("/monthly-budget/**").authenticated()
+//                        .requestMatchers("/budget-redistribution/**").authenticated()
                         .anyRequest().permitAll())
-                .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+//                        .anyRequest().authenticated())
+                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }

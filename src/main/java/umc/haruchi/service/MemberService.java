@@ -36,6 +36,7 @@ public class MemberService {
 
     public static int code;
 
+    // 회원가입
     @Transactional
     public Member joinMember(MemberRequestDTO.MemberJoinDTO request) throws Exception {
 
@@ -59,6 +60,7 @@ public class MemberService {
         return memberRepository.save(newMember);
     }
 
+    // 비밀번호 확인
     @Transactional
     public void checkPassword(String password, String verifyPassword) {
         if (!password.equals(verifyPassword)) {
@@ -66,6 +68,7 @@ public class MemberService {
         }
     }
 
+    // 이메일 중복 체크
     @Transactional
     public void checkDuplicatedEmail(String email) throws Exception {
         Optional<Member> member = memberRepository.findByEmail(email);
@@ -74,6 +77,7 @@ public class MemberService {
         }
     }
 
+    // 인증 번호를 전송할 메세지 생성
     @Transactional
     public MimeMessage createMessage(String to) throws Exception {
 
@@ -94,6 +98,7 @@ public class MemberService {
         return message;
     }
 
+    // 이메일 인증 번호 전송
     @Transactional
     public void sendSimpleMessage(String to) throws Exception {
 
@@ -107,20 +112,24 @@ public class MemberService {
         }
     }
 
+    // 이메일 인증 번호 redis에 저장
     public void saveVerificationCode(String email, String code) {
         redisTemplate.opsForValue().set(email, code, 1, TimeUnit.MINUTES);
     }
 
+    // 이메일 인증 번호 redis에서 얻기
     public String getVerificationCode(String email) {
         return (String) redisTemplate.opsForValue().get(email);
     }
 
+    // 인증 번호로 이메일 인증
     public void verificationEmail(String code, String savedCode) throws Exception {
         if (!code.equals(savedCode)) {
             throw new MemberHandler(ErrorStatus.EMAIL_VERIFY_FAILED);
         }
     }
 
+    // 로그인 (access token 발급)
     public MemberResponseDTO.LoginJwtTokenDTO login(MemberRequestDTO.MemberLoginDTO loginDto) {
         String email = loginDto.getEmail();
 
@@ -132,14 +141,18 @@ public class MemberService {
             throw new MemberHandler(ErrorStatus.PASSWORD_NOT_MATCH);
         }
 
-        String accessToken = JwtUtil.createJwt(member.getId(), member.getEmail(), null);
+        String accessToken = JwtUtil.createJwt(member.getId(), member.getEmail(), null, 1000L * 60 * 30);
+        String refreshToken = JwtUtil.createJwt(member.getId(), member.getEmail(), null, 1000L * 60 * 60 * 24 * 14);
 
-        LocalDateTime expiredAt = LocalDateTime.now().plusDays(7);
+        Long accessExpiredAt = JwtUtil.getExpiration(accessToken);
+        Long refreshExpiredAt = JwtUtil.getExpiration(refreshToken);
 
         return MemberResponseDTO.LoginJwtTokenDTO.builder()
                 .grantType("Bearer")
+                .refreshToken(refreshToken)
                 .accessToken(accessToken)
-                .accessTokenExpiresAt(expiredAt)
+                .accessTokenExpiresAt(accessExpiredAt)
+                .refreshTokenExpirationAt(refreshExpiredAt)
                 .build();
     }
 

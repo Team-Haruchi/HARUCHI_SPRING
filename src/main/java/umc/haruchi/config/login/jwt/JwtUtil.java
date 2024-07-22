@@ -3,23 +3,30 @@ package umc.haruchi.config.login.jwt;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import umc.haruchi.apiPayload.exception.handler.JwtExpiredHandler;
 import umc.haruchi.apiPayload.exception.handler.JwtInvalidHandler;
+import umc.haruchi.config.login.auth.MemberDetailService;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 
+@RequiredArgsConstructor
 @Component
 public class JwtUtil implements InitializingBean {
 
     @Value("${spring.jwt.secret}")
     private String secret;
     private static SecretKey secretKey;
-    private static final Long expireMs = 1000L * 60 * 60 * 24 * 7;
-
+    private static final Long accessExpireMs = 1000L * 60 * 60 * 24 * 7;
+    private static final Long refreshExpireMs = 1000L * 60 * 60 * 24 * 7;
+    private final MemberDetailService memberDetailService;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -45,7 +52,7 @@ public class JwtUtil implements InitializingBean {
                 .get("role", String.class);
     }
 
-    public static Boolean isExpired(String token) {
+    public static boolean isExpired(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
@@ -55,8 +62,26 @@ public class JwtUtil implements InitializingBean {
                 .before(new Date());
     }
 
-    public static String createJwt(Long memberId, String email, String role){
+    public static long getExpiration(String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getExpiration()
+                .getTime();
+    }
+
+    public Authentication getAuthentication(String token) {
+        UserDetails userDetails = memberDetailService.loadUserByUsername(this.getEmail(token));
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+    }
+
+    public static String createJwt(Long memberId, String email, String role, Long expireMs){
         return Jwts.builder()
+                .header()
+                .add("typ", "JWT")
+                .and()
                 .claim("memberId", memberId)
                 .claim("email", email)
                 .claim("role", role)
@@ -81,7 +106,7 @@ public class JwtUtil implements InitializingBean {
                 .claim("email", email)
                 .claim("role", role)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis()+expireMs))
+                .expiration(new Date(System.currentTimeMillis()+refreshExpireMs))
                 .signWith(secretKey)
                 .compact();
     }
@@ -200,6 +225,8 @@ public class JwtUtil implements InitializingBean {
 //
 //        return refreshToken;
 //    }
+
+
 
 //    private final Key key;
 //    private final RedisUtil redisUtil;
