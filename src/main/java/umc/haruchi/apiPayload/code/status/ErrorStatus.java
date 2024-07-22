@@ -23,6 +23,11 @@ public enum ErrorStatus implements BaseErrorCode {
     EMAIL_VERIFY_FAILED(HttpStatus.BAD_REQUEST, "MEMBER4004", "인증 번호가 일치하지 않습니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4005", "없는 회원입니다."),
     PASSWORD_NOT_MATCH(HttpStatus.UNAUTHORIZED, "MEMBER4006", "비밀번호가 일치하지 않습니다."),
+    // MonthBudget 관련 에러
+    NOT_MONTH_BUDGET(HttpStatus.NOT_FOUND, "MONTHBUDGET4001", "한 달 예산이 존재하지 않습니다."),
+
+    // DayBudget 관련 에러
+    NOT_DAY_BUDGET(HttpStatus.NOT_FOUND, "DAYBUDGET4001", "하루 예산이 존재하지 않습니다."),
 
     // Token 관련 에러 - 수정...
     TOKEN_EMPTY(HttpStatus.UNAUTHORIZED, "MEMBER4020", "토큰이 비어있습니다."),

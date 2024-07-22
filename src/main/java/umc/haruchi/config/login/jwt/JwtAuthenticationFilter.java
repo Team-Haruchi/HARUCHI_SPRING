@@ -18,6 +18,7 @@ import umc.haruchi.apiPayload.ApiResponse;
 import umc.haruchi.apiPayload.exception.handler.JwtExpiredHandler;
 import umc.haruchi.apiPayload.exception.handler.JwtInvalidHandler;
 import umc.haruchi.config.login.auth.MemberDetail;
+import umc.haruchi.config.login.auth.MemberDetailService;
 import umc.haruchi.domain.Member;
 
 import java.io.IOException;
@@ -26,22 +27,31 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final JwtUtil jwtUtil;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 //        String accessToken = request.getHeader("Authorization");
-        String accessToken = resolveToken(request);
-        if (accessToken == null) {
+        String token = resolveToken(request);
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
+        if (jwtUtil.isExpired(token)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
-            JwtUtil.validateAccessToken(accessToken);
-            String email = JwtUtil.getEmail(accessToken);
-
-            Member member = Member.builder().email(email).build();
-            MemberDetail memberDetail = MemberDetail.createMemberDetail(member);
-
-            Authentication authentication = new UsernamePasswordAuthenticationToken(memberDetail, null, memberDetail.getAuthorities());
+            JwtUtil.validateAccessToken(token);
+//            String email = JwtUtil.getEmail(token);
+//
+//            Member member = Member.builder().email(email).build();
+//            MemberDetail memberDetail = MemberDetail.createMemberDetail(member);
+//
+//            Authentication authentication = new UsernamePasswordAuthenticationToken(memberDetail, null, memberDetail.getAuthorities());
+            Authentication authentication = jwtUtil.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (JwtExpiredHandler e) {
             response.setContentType("application/json");

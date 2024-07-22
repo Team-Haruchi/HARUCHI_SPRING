@@ -25,9 +25,9 @@ public class MemberResponseDTO {
     public static class LoginJwtTokenDTO {
         private String grantType;
         private String accessToken;
-        LocalDateTime accessTokenExpiresAt;
-//        private String refreshToken;
-//        private Long refreshTokenExpirationTime;
+        private Long accessTokenExpiresAt;
+        private String refreshToken;
+        private Long refreshTokenExpirationAt;
     }
 
 }
