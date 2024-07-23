@@ -1,5 +1,5 @@
 package umc.haruchi.domain.enums;
 
 public enum MemberStatus {
-    LOGIN, LOGOUT, INACTIVE, DELETED
+    LOGIN, LOGOUT
 }

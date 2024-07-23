@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.validator.constraints.Length;
 import umc.haruchi.domain.common.BaseEntity;
 
 @Entity
@@ -13,24 +14,13 @@ import umc.haruchi.domain.common.BaseEntity;
 @DynamicInsert
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MemberToken extends BaseEntity {
+public class Withdrawer extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private String accessToken;
-
-    @Column(nullable = false)
-    private String refreshToken;
-
-    @OneToOne
-    @JoinColumn(name = "member_id")
-    private Member member;
-
-    public void setTokens(String accessToken, String refreshToken) {
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
-    }
+    @Length(min = 1, max = 20)
+    private String reason;
 }
