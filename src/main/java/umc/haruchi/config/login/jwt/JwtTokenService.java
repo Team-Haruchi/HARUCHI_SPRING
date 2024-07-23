@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.domain.MemberToken;
 import umc.haruchi.repository.MemberTokenRepository;
 import org.springframework.security.access.AccessDeniedException;
+import umc.haruchi.web.dto.MemberResponseDTO;
 
 @Service
 @Slf4j
@@ -15,7 +16,6 @@ import org.springframework.security.access.AccessDeniedException;
 public class JwtTokenService {
 
     private final MemberTokenRepository memberTokenRepository;
-    private final JwtUtil jwtUtil;
 
     public MemberToken findByAnyToken(String token) throws AccessDeniedException {
         return memberTokenRepository.findByAccessToken(token)
@@ -44,12 +44,19 @@ public class JwtTokenService {
     }
 
     @Transactional
-    public String refresh(String refreshToken) {
+    public MemberResponseDTO.LoginJwtTokenDTO refresh(String refreshToken) {
         MemberToken foundToken = findByRefreshToken(refreshToken);
-        String accessToken = jwtUtil.createJwt(foundToken.getMember().getId(), foundToken.getMember().getEmail(), null, 1000L * 60 * 60 * 24 * 7);
-        foundToken.setAccessToken(accessToken);
+        String newAccessToken = JwtUtil.createAccessJwt(foundToken.getMember().getId(), foundToken.getMember().getEmail(), null);
+        String newRefreshToken = JwtUtil.createRefreshJwt(foundToken.getMember().getId(), foundToken.getMember().getEmail(), null);
+        foundToken.setTokens(newAccessToken, newRefreshToken);
         memberTokenRepository.save(foundToken);
 
-        return accessToken;
+        return MemberResponseDTO.LoginJwtTokenDTO.builder()
+                .grantType("Bearer")
+                .accessToken(newAccessToken)
+                .accessTokenExpiresAt(JwtUtil.getExpiration(newAccessToken))
+                .refreshToken(newRefreshToken)
+                .refreshTokenExpirationAt(JwtUtil.getExpiration(newRefreshToken))
+                .build();
     }
 }

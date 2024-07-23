@@ -29,7 +29,8 @@ public class MemberToken extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    public void setAccessToken(String token) {
-        this.accessToken = token;
+    public void setTokens(String accessToken, String refreshToken) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
     }
 }
