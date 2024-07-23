@@ -28,6 +28,9 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // DayBudget 관련 에러
     NOT_DAY_BUDGET(HttpStatus.NOT_FOUND, "DAYBUDGET4001", "하루 예산이 존재하지 않습니다."),
+
+    // Income 관련 에러
+    INCOME_NOT_EXIST(HttpStatus.NOT_FOUND, "INCOME4001", "해당 수입이 존재하지 않습니다."),
     ;
 
     //플젝 진행하며 추가하기..

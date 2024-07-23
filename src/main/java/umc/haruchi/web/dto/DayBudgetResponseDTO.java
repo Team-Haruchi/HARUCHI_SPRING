@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 public class DayBudgetResponseDTO {
 
-    // 하루 예산 금액 조회 API 구현
     @Builder
     @Getter
     @NoArgsConstructor

@@ -24,4 +24,25 @@ public class DayBudgetController {
         return ApiResponse.onSuccess(DayBudgetConverter.toGetDayBudget(todayBudget));
     }
 
+    @Operation(summary = "수입 등록 API", description = "하루 수입을 등록하는 API 입니다.")
+    @PostMapping("/income")
+    public ApiResponse<?> createIncome(){
+
+        return null;
+    }
+
+    @Operation(summary = "수입 삭제 API", description = "하루 수입을 삭제하는 API 입니다.")
+    @DeleteMapping("/income/{incomeId}")
+    public ApiResponse<?> deleteIncome(@PathVariable Long incomeId,
+                                       @RequestParam(name = "memberId") Long memberId){
+        dayBudgetService.deleteIncome(memberId, incomeId);
+        return null;
+    }
+
+    @Operation(summary = "수입 조회 API", description = "하루 수입을 모두 조회하는 API 입니다.")
+    @PostMapping("/income/list")
+    public ApiResponse<?> getIncome(@RequestParam(name = "memberId") Long memberId){
+
+        return null;
+    }
 }
