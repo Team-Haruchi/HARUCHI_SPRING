@@ -60,4 +60,15 @@ public class MemberRequestDTO {
         )
         private String password;
     }
+
+    @Getter
+    public static class MemberWithdrawRequestDTO {
+
+        @NotBlank(message = "토큰 값은 필수 입력 값입니다.")
+        private String token;
+
+        @NotBlank(message = "탈퇴 이유는 필수 입력 값입니다.")
+        @Length(min = 1, max = 20)
+        private String reason;
+    }
 }
