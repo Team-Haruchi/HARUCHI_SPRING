@@ -12,21 +12,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.apiPayload.code.status.ErrorStatus;
 import umc.haruchi.apiPayload.exception.handler.MemberHandler;
-import umc.haruchi.config.login.jwt.JwtTokenService;
 import umc.haruchi.config.login.jwt.JwtUtil;
 import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.domain.Member;
 import umc.haruchi.domain.MemberToken;
 import umc.haruchi.domain.Withdrawer;
-import umc.haruchi.domain.enums.MemberStatus;
 import umc.haruchi.repository.MemberRepository;
 import umc.haruchi.repository.MemberTokenRepository;
 import umc.haruchi.repository.WithdrawerRepository;
 import umc.haruchi.web.dto.MemberRequestDTO;
 import umc.haruchi.web.dto.MemberResponseDTO;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
