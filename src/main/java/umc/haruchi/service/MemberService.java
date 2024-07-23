@@ -144,8 +144,9 @@ public class MemberService {
             throw new MemberHandler(ErrorStatus.PASSWORD_NOT_MATCH);
         }
 
-        String accessToken = JwtUtil.createJwt(member.getId(), member.getEmail(), null, 1000L * 60 * 30);
-        String refreshToken = JwtUtil.createJwt(member.getId(), member.getEmail(), null, 1000L * 60 * 60 * 24 * 14);
+        // 30일 이상 미접속 시 로그아웃 되도록 토큰 유효시간을 수정
+        String accessToken = JwtUtil.createAccessJwt(member.getId(), member.getEmail(), null);
+        String refreshToken = JwtUtil.createRefreshJwt(member.getId(), member.getEmail(), null);
         MemberToken token = MemberToken.builder()
                 .member(member)
                 .accessToken(accessToken)
@@ -164,7 +165,6 @@ public class MemberService {
                 .refreshTokenExpirationAt(refreshExpiredAt)
                 .build();
     }
-
 
     // 혹시 몰라 남겨둠
 //    public MemberResponseDTO.LoginJwtTokenDTO login(MemberRequestDTO.MemberLoginDTO request) {

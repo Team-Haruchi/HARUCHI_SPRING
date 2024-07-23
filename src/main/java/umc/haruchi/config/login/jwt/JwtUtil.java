@@ -28,8 +28,8 @@ public class JwtUtil implements InitializingBean {
     @Value("${spring.jwt.secret}")
     private String secret;
     private static SecretKey secretKey;
-    private static final Long accessExpireMs = 1000L * 60 * 60 * 24 * 7;
-    private static final Long refreshExpireMs = 1000L * 60 * 60 * 24 * 7;
+    private static final Long accessExpireMs = 1000L * 60 * 60 * 2;
+    private static final Long refreshExpireMs = 1000L * 60 * 60 * 24 * 30;
     private final MemberDetailService memberDetailService;
 
     @Override
@@ -103,7 +103,7 @@ public class JwtUtil implements InitializingBean {
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
-    public static String createJwt(Long memberId, String email, String role, Long expireMs){
+    public static String createRefreshJwt(Long memberId, String email, String role){
         return Jwts.builder()
                 .header()
                 .add("typ", "JWT")
@@ -112,7 +112,21 @@ public class JwtUtil implements InitializingBean {
                 .claim("email", email)
                 .claim("role", role)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis()+expireMs))
+                .expiration(new Date(System.currentTimeMillis()+refreshExpireMs))
+                .signWith(secretKey)
+                .compact();
+    }
+
+    public static String createAccessJwt(Long memberId, String email, String role){
+        return Jwts.builder()
+                .header()
+                .add("typ", "JWT")
+                .and()
+                .claim("memberId", memberId)
+                .claim("email", email)
+                .claim("role", role)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis()+accessExpireMs))
                 .signWith(secretKey)
                 .compact();
     }
