@@ -23,6 +23,7 @@ public enum ErrorStatus implements BaseErrorCode {
     EMAIL_VERIFY_FAILED(HttpStatus.BAD_REQUEST, "MEMBER4004", "인증 번호가 일치하지 않습니다."),
     NO_MEMBER_EXIST(HttpStatus.NOT_FOUND, "MEMBER4005", "존재하지 않는 회원입니다."),
     PASSWORD_NOT_MATCH(HttpStatus.UNAUTHORIZED, "MEMBER4006", "비밀번호가 일치하지 않습니다."),
+    WITHDRAWAL_MEMBER(HttpStatus.NOT_FOUND, "MEMBER4007", "탈퇴한 회원입니다."),
 
     // MonthBudget 관련 에러
     NOT_MONTH_BUDGET(HttpStatus.NOT_FOUND, "MONTHBUDGET4001", "한 달 예산이 존재하지 않습니다."),

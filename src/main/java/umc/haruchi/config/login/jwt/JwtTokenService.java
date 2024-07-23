@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import umc.haruchi.domain.Member;
 import umc.haruchi.domain.MemberToken;
 import umc.haruchi.repository.MemberTokenRepository;
 import org.springframework.security.access.AccessDeniedException;
@@ -38,8 +39,15 @@ public class JwtTokenService {
     }
 
     @Transactional
-    public void expire(String token) {
+    public void expire(String token, String status) {
         MemberToken foundToken = findByAnyToken(token);
+        Member member = foundToken.getMember();
+        if (status.equals("LOGOUT")) {
+            member.setMemberStatusLogout();
+        }
+        else if (status.equals("INACTIVE")) {
+            member.setMemberStatusInactive();
+        }
         memberTokenRepository.delete(foundToken);
     }
 
