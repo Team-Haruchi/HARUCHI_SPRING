@@ -22,6 +22,7 @@ import umc.haruchi.repository.MemberTokenRepository;
 import umc.haruchi.web.dto.MemberRequestDTO;
 import umc.haruchi.web.dto.MemberResponseDTO;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -138,6 +139,22 @@ public class MemberService {
 
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
+
+        MemberStatus memberStatus = member.getMemberStatus();
+        LocalDate memberInactiveDate = member.getInactiveDate();
+
+        if (memberStatus == MemberStatus.DELETED) {
+            memberRepository.delete(member);
+            throw new MemberHandler(ErrorStatus.WITHDRAWAL_MEMBER);
+        }
+
+        if (memberStatus == MemberStatus.INACTIVE) {
+            if (memberInactiveDate.plusDays(30).isBefore(LocalDate.now())) {
+                memberRepository.delete(member);
+                throw new MemberHandler(ErrorStatus.WITHDRAWAL_MEMBER);
+            }
+        }
+
         member.setMemberStatusLogin();
 
         if (!passwordEncoder.matches(loginDto.getPassword(), member.getPassword())) {

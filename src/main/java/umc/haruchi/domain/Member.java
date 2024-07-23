@@ -38,14 +38,14 @@ public class Member extends BaseEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'LOGOUT'") // LOGIN, LOGOUT, INACTIVE, DELETED
+    @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'LOGOUT'") // LOGIN, LOGOUT, INACTIVE, DELETED -> ACTIVE와 INACTIVE로만 사용?
     private MemberStatus memberStatus;
 
     @Column(nullable = true)
     private LocalDate inactiveDate;
 
     @Column(nullable = true)
-    private LocalDateTime lastLoginDate;
+    private LocalDateTime lastLoginDate; // 삭제할듯 -> 토큰으로 판단 가능
 
     @Column(nullable = false, columnDefinition = "bigint default 0")
     private Long safeBox;
@@ -54,7 +54,7 @@ public class Member extends BaseEntity {
     private MemberToken memberToken;
 
     @Column(nullable = false, columnDefinition = "VARCHAR(5) DEFAULT 'USER'")
-    private String role; // USER, ADMIN -> 삭제할 수도 있음
+    private String role; // USER, ADMIN -> 삭제할듯
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     @Builder.Default
@@ -67,6 +67,7 @@ public class Member extends BaseEntity {
     public void setMemberStatusLogin() {
         this.memberStatus = MemberStatus.LOGIN;
         this.lastLoginDate = LocalDateTime.now();
+        this.inactiveDate = null;
     }
 
     public void setMemberStatusLogout() {
@@ -75,6 +76,11 @@ public class Member extends BaseEntity {
 
     public void setMemberStatusInactive() {
         this.memberStatus = MemberStatus.INACTIVE;
+        this.inactiveDate = LocalDate.now();
+    }
+
+    public void setMemberStatusDELETED() {
+        this.memberStatus = MemberStatus.DELETED;
     }
 
 }
