@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -17,9 +16,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import umc.haruchi.apiPayload.ApiResponse;
 import umc.haruchi.apiPayload.exception.handler.JwtExpiredHandler;
 import umc.haruchi.apiPayload.exception.handler.JwtInvalidHandler;
-import umc.haruchi.config.login.auth.MemberDetail;
-import umc.haruchi.config.login.auth.MemberDetailService;
-import umc.haruchi.domain.Member;
 
 import java.io.IOException;
 
@@ -47,12 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             jwtUtil.validateToken(token);
             JwtUtil.validateAccessToken(token); // 생략해도 될까?
-//            String email = JwtUtil.getEmail(token);
-//
-//            Member member = Member.builder().email(email).build();
-//            MemberDetail memberDetail = MemberDetail.createMemberDetail(member);
-//
-//            Authentication authentication = new UsernamePasswordAuthenticationToken(memberDetail, null, memberDetail.getAuthorities());
+
             Authentication authentication = jwtUtil.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
             jwtTokenService.checkExpired(token);

@@ -1,12 +1,12 @@
 package umc.haruchi.config.login.jwt;
 
-import io.jsonwebtoken.Jwt;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.domain.Member;
 import umc.haruchi.domain.MemberToken;
+import umc.haruchi.repository.MemberRepository;
 import umc.haruchi.repository.MemberTokenRepository;
 import org.springframework.security.access.AccessDeniedException;
 import umc.haruchi.web.dto.MemberResponseDTO;
@@ -17,6 +17,7 @@ import umc.haruchi.web.dto.MemberResponseDTO;
 public class JwtTokenService {
 
     private final MemberTokenRepository memberTokenRepository;
+    private final MemberRepository memberRepository;
 
     public MemberToken findByAnyToken(String token) throws AccessDeniedException {
         return memberTokenRepository.findByAccessToken(token)
@@ -46,7 +47,7 @@ public class JwtTokenService {
             member.setMemberStatusLogout();
         }
         else if (status.equals("INACTIVE")) {
-            member.setMemberStatusInactive();
+            memberRepository.delete(member);
         }
         memberTokenRepository.delete(foundToken);
     }

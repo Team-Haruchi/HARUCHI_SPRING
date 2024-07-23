@@ -12,13 +12,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.apiPayload.code.status.ErrorStatus;
 import umc.haruchi.apiPayload.exception.handler.MemberHandler;
+import umc.haruchi.config.login.jwt.JwtTokenService;
 import umc.haruchi.config.login.jwt.JwtUtil;
 import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.domain.Member;
 import umc.haruchi.domain.MemberToken;
+import umc.haruchi.domain.Withdrawer;
 import umc.haruchi.domain.enums.MemberStatus;
 import umc.haruchi.repository.MemberRepository;
 import umc.haruchi.repository.MemberTokenRepository;
+import umc.haruchi.repository.WithdrawerRepository;
 import umc.haruchi.web.dto.MemberRequestDTO;
 import umc.haruchi.web.dto.MemberResponseDTO;
 
@@ -37,6 +40,7 @@ public class MemberService {
     private final JavaMailSender mailSender;
     private final RedisTemplate redisTemplate;
     private final MemberTokenRepository memberTokenRepository;
+    private final WithdrawerRepository withdrawerRepository;
 
     public static int code;
 
@@ -53,11 +57,6 @@ public class MemberService {
         if (!request.isVerifiedEmail()) {
             throw new MemberHandler(ErrorStatus.NOT_VERIFIED_EMAIL);
         }
-
-        // 중복돼도 괜찮아서 주석 처리
-//        if (memberRepository.findByName(request.getName()).isPresent()) {
-//            throw new MemberHandler(ErrorStatus.EXISTED_NAME);
-//        }
 
         Member newMember = MemberConverter.toMember(request);
         newMember.encodePassword(passwordEncoder.encode(request.getPassword()));
@@ -140,23 +139,6 @@ public class MemberService {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
 
-        MemberStatus memberStatus = member.getMemberStatus();
-        LocalDate memberInactiveDate = member.getInactiveDate();
-
-        if (memberStatus == MemberStatus.DELETED) {
-            memberRepository.delete(member);
-            throw new MemberHandler(ErrorStatus.WITHDRAWAL_MEMBER);
-        }
-
-        if (memberStatus == MemberStatus.INACTIVE) {
-            // 탈퇴 신청 후 30일이 지난 회원
-            if (memberInactiveDate.plusDays(30).isBefore(LocalDate.now())) {
-                memberRepository.delete(member);
-                throw new MemberHandler(ErrorStatus.WITHDRAWAL_MEMBER);
-            }
-            // 탈퇴 신청이 철회될 수 있는 회원의 로그인
-        }
-
         member.setMemberStatusLogin();
 
         if (!passwordEncoder.matches(loginDto.getPassword(), member.getPassword())) {
@@ -183,6 +165,14 @@ public class MemberService {
                 .accessTokenExpiresAt(accessExpiredAt)
                 .refreshTokenExpirationAt(refreshExpiredAt)
                 .build();
+    }
+
+    // 회원 즉시 탈퇴 - 이유 저장
+    public void withdrawer(String reason) {
+        Withdrawer withdrawer = Withdrawer.builder()
+                .reason(reason)
+                .build();
+        withdrawerRepository.save(withdrawer);
     }
 
     // 혹시 몰라 남겨둠

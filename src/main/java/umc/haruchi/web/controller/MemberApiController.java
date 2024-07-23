@@ -99,8 +99,11 @@ public class MemberApiController {
 
     @PostMapping("/delete")
     @Operation(summary = "회원탈퇴 API", description = "회원탈퇴를 진행하는 API")
-    public ApiResponse<MemberResponseDTO> deleteMember(@RequestParam("token") String token) {
+    public ApiResponse<MemberResponseDTO> deleteMember(@Valid @RequestBody MemberRequestDTO.MemberWithdrawRequestDTO request) {
+        String token = request.getToken();
+        String reason = request.getReason();
         jwtTokenService.expire(token, "INACTIVE");
+        memberService.withdrawer(reason);
         return ApiResponse.onSuccess(null);
     }
 }
