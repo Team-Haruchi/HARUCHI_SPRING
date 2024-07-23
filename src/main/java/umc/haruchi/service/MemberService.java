@@ -149,10 +149,12 @@ public class MemberService {
         }
 
         if (memberStatus == MemberStatus.INACTIVE) {
+            // 탈퇴 신청 후 30일이 지난 회원
             if (memberInactiveDate.plusDays(30).isBefore(LocalDate.now())) {
                 memberRepository.delete(member);
                 throw new MemberHandler(ErrorStatus.WITHDRAWAL_MEMBER);
             }
+            // 탈퇴 신청이 철회될 수 있는 회원의 로그인
         }
 
         member.setMemberStatusLogin();

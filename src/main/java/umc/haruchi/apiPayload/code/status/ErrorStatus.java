@@ -30,6 +30,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // DayBudget 관련 에러
     NOT_DAY_BUDGET(HttpStatus.NOT_FOUND, "DAYBUDGET4001", "하루 예산이 존재하지 않습니다."),
+    NOT_SOME_DAY_BUDGET(HttpStatus.NOT_FOUND, "DAYBUDGET4002", "특정 날짜의 예산이 존재하지 않습니다."),
 
     // Token 관련 에러 - 수정...
     TOKEN_EMPTY(HttpStatus.UNAUTHORIZED, "MEMBER4020", "토큰이 비어있습니다."),
@@ -40,7 +41,6 @@ public enum ErrorStatus implements BaseErrorCode {
     EMPTY_CLAIMS_TOKEN(HttpStatus.UNAUTHORIZED, "MEMBER4025", "JWT Claims 문자열이 비어있습니다."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "MEMBER4026", "올바르지 않은 JWT 토큰입니다."),
     JWT_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4027", "유효한 JWT 토큰이 없습니다."),
-
     ;
     //플젝 진행하며 추가하기..
 
