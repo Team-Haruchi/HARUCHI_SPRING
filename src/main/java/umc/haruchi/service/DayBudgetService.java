@@ -17,6 +17,8 @@ import umc.haruchi.repository.MonthBudgetRepository;
 
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +32,6 @@ public class DayBudgetService {
 
     @Autowired
     private MemberRepository memberRepository;
-
 
     @Transactional
     public Integer findDayBudget(Long memberId) {
@@ -54,5 +55,33 @@ public class DayBudgetService {
         }
 
         return dayBudget.getDayBudget();
+    }
+
+    public List<Integer> findAllBudget(Long memberId) {
+        LocalDate now = LocalDate.now();
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        int day = now.getDayOfMonth();
+        int lastDay = now.lengthOfMonth();
+
+        if(memberRepository.findById(memberId).isEmpty()){
+            throw new MemberHandler(ErrorStatus.NO_MEMBER_EXIST);
+        }
+
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month);
+        if(monthBudget == null){
+            throw new MonthBudgetHandler(ErrorStatus.NOT_MONTH_BUDGET);
+        }
+
+        List<Integer> allBudget = new ArrayList<>();
+        for(int i=day; i<=lastDay; i++){
+            DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, i);
+            if(dayBudget == null){
+                throw new DayBudgetHandler(ErrorStatus.NOT_SOME_DAY_BUDGET);
+            }
+            allBudget.add(dayBudget.getDayBudget());
+        }
+
+        return allBudget;
     }
 }
