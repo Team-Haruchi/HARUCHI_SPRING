@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+import java.util.List;
+
 public class DayBudgetResponseDTO {
 
     @Builder
@@ -15,4 +18,23 @@ public class DayBudgetResponseDTO {
     public static class getDayBudget {
         Integer dayBudget;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class getBudget {
+        List<Integer> budget;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class incomeReg{
+        LocalDate createdAt;
+        Long incomeId;
+
+    }
+
 }
