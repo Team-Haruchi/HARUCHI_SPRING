@@ -50,5 +50,4 @@ public class MonthBudget extends BaseEntity {
         this.month = now.getMonthValue();
     }
 
-
 }
