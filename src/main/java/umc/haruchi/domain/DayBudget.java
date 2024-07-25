@@ -60,4 +60,13 @@ public class DayBudget extends BaseEntity {
         LocalDate now = LocalDate.now();
         this.day = now.getDayOfMonth();
     }
+
+    public void setIncome(long amount, int how) {
+        if(how == 0)
+            DayBudget -= (int)amount;
+        else
+            DayBudget += (int)amount;
+    }
+
+
 }

@@ -31,6 +31,11 @@ public enum ErrorStatus implements BaseErrorCode {
     // DayBudget 관련 에러
     NOT_DAY_BUDGET(HttpStatus.NOT_FOUND, "DAYBUDGET4001", "하루 예산이 존재하지 않습니다."),
     NOT_SOME_DAY_BUDGET(HttpStatus.NOT_FOUND, "DAYBUDGET4002", "특정 날짜의 예산이 존재하지 않습니다."),
+    TODAY_CLOSED(HttpStatus.BAD_REQUEST, "DAYBUDGET4003", "오늘 지출은 마감되었습니다."),
+
+    // Income 관련 에러
+    INCOME_NOT_EXIST(HttpStatus.NOT_FOUND, "INCOME4001", "해당 수입이 존재하지 않습니다."),
+
 
     // Token 관련 에러 - 수정...
     TOKEN_EMPTY(HttpStatus.UNAUTHORIZED, "MEMBER4020", "토큰이 비어있습니다."),
