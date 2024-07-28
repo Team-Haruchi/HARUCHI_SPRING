@@ -1,8 +1,18 @@
 spring:
+#  datasource:
+#    url: ${DEV_MYSQL_URL}
+#    username: ${DEV_MYSQL_USERNAME}
+#    password: ${DEV_MYSQL_PASSWORD}
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+#    show-sql: true
   datasource:
-    url: ${DEV_MYSQL_URL}
-    username: ${DEV_MYSQL_USERNAME}
-    password: ${DEV_MYSQL_PASSWORD}
+    url: jdbc:mysql://localhost:3306/haruchi
+    username: root
+    password: binari0915
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -26,7 +36,8 @@ spring:
 
   data:
     redis:
-      host: ${AWS_REDIS_HOST} #로컬로 실행할 때에는 로컬 Redis 서버로만 테스트 가능. 연동 x
+      host: localhost
+#      host: ${AWS_REDIS_HOST} #로컬로 실행할 때에는 로컬 Redis 서버로만 테스트 가능. 연동 x
       port: 6379
 
   cache:

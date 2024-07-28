@@ -7,7 +7,7 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import umc.haruchi.domain.common.BaseEntity;
 import umc.haruchi.domain.enums.RedistributionOption;
-import umc.haruchi.domain.mapping.BudgetRedistribution;
+//import umc.haruchi.domain.mapping.BudgetRedistribution;
 
 import java.time.LocalDate;
 
@@ -31,20 +31,25 @@ public class PushPlusClosing extends BaseEntity {
     @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'DATE'")
     private RedistributionOption redistributionOption;
 
-    @Column(nullable = false)
-    private LocalDate fromDate;
-
-    @Column(nullable = true)
-    private LocalDate toDate;
+//    @Column(nullable = false)
+//    private LocalDate fromDate;
+//
+//    @Column(nullable = true)
+//    private LocalDate toDate;
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer amount;
+    private long amount;
 
-    @Column(nullable = true, length = 10)
-    private String memo;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "budget_redistribution_id")
+//    private BudgetRedistribution budgetRedistribution;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "budget_redistribution_id")
-    private BudgetRedistribution budgetRedistribution;
+    @JoinColumn(name = "source_day_budget_Id")
+    private DayBudget sourceDayBudget;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "target_day_budget_id")
+    private DayBudget targetDayBudget;
 }
