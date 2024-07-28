@@ -13,8 +13,17 @@ public class BudgetRedistributionResponseDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class BudgetPushDTO {
+    public static class BudgetPushResultDTO {
         Long pushId;
+        LocalDate createdAt;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BudgetPullResultDTO {
+        Long pullId;
         LocalDate createdAt;
     }
 }
