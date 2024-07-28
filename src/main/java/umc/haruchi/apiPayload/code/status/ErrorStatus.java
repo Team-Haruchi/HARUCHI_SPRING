@@ -35,8 +35,10 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // Redistribution 관련 에러
     TARGET_MUST_NULL(HttpStatus.BAD_REQUEST, "REDISTRIBUTION4001", "타겟 날짜는 NULL 이어야 합니다."),
-    TARGET_NOT_NULL(HttpStatus.BAD_REQUEST, "REDISTRIBUTION4002", "타겟 날짜가 존재하지 않습니다."),
-    INVALID_AMOUNT_RANGE(HttpStatus.BAD_REQUEST, "REDISTRIBUTION4003", "입력된 금액이 해당 예산 범위를 초과하거나 유효하지 않습니다."),
+    TARGET_IS_NULL(HttpStatus.BAD_REQUEST, "REDISTRIBUTION4002", "타겟 날짜가 존재하지 않습니다."),
+    SOURCE_MUST_NULL(HttpStatus.BAD_REQUEST, "REDISTRIBUTION4003", "소스 날짜는 NULL 이어야 합니다."),
+    SOURCE_IS_NULL(HttpStatus.BAD_REQUEST, "REDISTRIBUTION4004", "소스 날짜가 존재하지 않습니다."),
+    INVALID_AMOUNT_RANGE(HttpStatus.BAD_REQUEST, "REDISTRIBUTION4005", "입력된 금액이 해당 예산 범위를 초과하거나 유효하지 않습니다."),
 
     // Income 관련 에러
     INCOME_NOT_EXIST(HttpStatus.NOT_FOUND, "INCOME4001", "해당 수입이 존재하지 않습니다."),
