@@ -36,22 +36,17 @@ public class BudgetRedistributionService {
     //넘기기
     @Transactional
     public PushPlusClosing push(BudgetRedistributionRequestDTO.createPushDTO request, Long memberId) {
-
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(NO_MEMBER_EXIST)); //영속화
-
         MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), year, month);
-        long totalAmount = request.getAmount();
+        DayBudget sourceBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getSourceDay());
 
-        //source에 해당하는 daybudget 찾기
-        DayBudget sourceBudget = dayBudgetRepository.findById(request.getSourceId())
-                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
+        long totalAmount = request.getAmount();
 
         //target에 해당하는 daybudget 찾기
         DayBudget targetBudget = null;
-        if (request.getTargetId() != null) {
-            targetBudget = dayBudgetRepository.findById(request.getTargetId())
-                    .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
+        if (request.getTargetDay() != null) {
+            targetBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget,request.getTargetDay());
         }
 
         if (request.getAmount() > sourceBudget.getDayBudget() && request.getAmount() < 0) {
@@ -137,19 +132,15 @@ public class BudgetRedistributionService {
                 .orElseThrow(() -> new MemberHandler(NO_MEMBER_EXIST)); //영속화
 
         MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), year, month);
+        DayBudget targetBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getTargetDay());
         long totalAmount = request.getAmount();
         int tossAmount = (int) (roundDownToNearestHundred(totalAmount));
 
         //source에 해당하는 daybudget 찾기
         DayBudget sourceBudget = null;
-        if (request.getSourceId() != null) {
-            sourceBudget = dayBudgetRepository.findById(request.getSourceId())
-                    .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
+        if (request.getSourceDay() != null) {
+            sourceBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getSourceDay());
         }
-
-        //target에 해당하는 daybudget 찾기
-        DayBudget targetBudget = dayBudgetRepository.findById(request.getTargetId())
-                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
 
         if (request.getAmount() < 0) {
             throw new BudgetRedistributionHandler(INVALID_AMOUNT_RANGE);
