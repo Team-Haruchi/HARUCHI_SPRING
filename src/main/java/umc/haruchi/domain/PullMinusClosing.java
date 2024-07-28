@@ -7,9 +7,6 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import umc.haruchi.domain.common.BaseEntity;
 import umc.haruchi.domain.enums.RedistributionOption;
-//import umc.haruchi.domain.mapping.BudgetRedistribution;
-
-import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -33,17 +30,13 @@ public class PullMinusClosing extends BaseEntity {
 
 //    @Column(nullable = true)
 //    private LocalDate fromDate;
-//
+//d
 //    @Column(nullable = false)
 //    private LocalDate toDate;
 
     @Column(nullable = false)
     @ColumnDefault("0")
     private Long amount;
-
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "budget_redistribution_id")
-//    private BudgetRedistribution budgetRedistribution;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "source_day_budget_Id")

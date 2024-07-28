@@ -7,7 +7,6 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import umc.haruchi.domain.common.BaseEntity;
 import umc.haruchi.domain.enums.DayBudgetStatus;
-//import umc.haruchi.domain.mapping.BudgetRedistribution;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -32,23 +31,27 @@ public class DayBudget extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer DayBudget;
+    private Integer dayBudget;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'ACTIVE'")
     private DayBudgetStatus dayBudgetStatus;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "budget_redistribution_id")
-//    private BudgetRedistribution budgetRedistribution;
-
-    @OneToMany(mappedBy = "budgetRedistribution", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "sourceDayBudget", cascade = CascadeType.ALL)
     @Builder.Default
-    private List<PullMinusClosing> pullMinusClosings = new ArrayList<>();
+    private List<PullMinusClosing> sourcePullMinusClosings = new ArrayList<>();
 
-    @OneToMany(mappedBy = "budgetRedistribution", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "targetDayBudget", cascade = CascadeType.ALL)
     @Builder.Default
-    private List<PushPlusClosing> pushPlusClosings = new ArrayList<>();
+    private List<PullMinusClosing> targetPullMinusClosings = new ArrayList<>();
+
+    @OneToMany(mappedBy = "sourceDayBudget", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<PushPlusClosing> sourcePushPlusClosings = new ArrayList<>();
+
+    @OneToMany(mappedBy = "targetDayBudget", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<PushPlusClosing> targetPushPlusClosings = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "month_budget_id")
@@ -70,16 +73,16 @@ public class DayBudget extends BaseEntity {
 
     public void setIncome(long amount, int how) {
         if(how == 0)
-            DayBudget -= (int)amount;
+            dayBudget -= (int)amount;
         else
-            DayBudget += (int)amount;
+            dayBudget += (int)amount;
     }
 
     public void pushAmount(Integer distributedAmount) {
-        DayBudget += distributedAmount;
+        dayBudget += distributedAmount;
     }
 
     public void subAmount(Integer tossAmount) {
-        DayBudget -= tossAmount;
+        dayBudget -= tossAmount;
     }
 }
