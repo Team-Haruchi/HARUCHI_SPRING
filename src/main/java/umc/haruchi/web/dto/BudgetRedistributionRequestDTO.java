@@ -20,10 +20,10 @@ public class BudgetRedistributionRequestDTO {
         @NotNull(message = "amount 값은 필수 입력 값입니다.")
         Long amount;
 
-        @NotNull(message = "source id는 필수 입력 값입니다.")
-        Long sourceId; //여기서
+        @NotNull(message = "sourceDay는 필수 입력 값입니다.")
+        int sourceDay; //여기서
 
-        Long targetId; //여기로
+        Integer targetDay; //여기로
     }
 
     @Builder
@@ -37,9 +37,9 @@ public class BudgetRedistributionRequestDTO {
         @NotNull(message = "amount 값은 필수 입력 값입니다.")
         Long amount;
 
-        Long sourceId; //여기서
+        Integer sourceDay; //여기서
 
-        @NotNull(message = "source id는 필수 입력 값입니다.")
-        Long targetId; //여기로
+        @NotNull(message = "targetDay는 필수 입력 값입니다.")
+        int targetDay; //여기로
     }
 }
