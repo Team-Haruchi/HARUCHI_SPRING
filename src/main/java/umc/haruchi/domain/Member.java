@@ -64,4 +64,7 @@ public class Member extends BaseEntity {
         this.memberStatus = MemberStatus.LOGOUT;
     }
 
+    public void addSafeBox(long safeBoxAmount) {
+        safeBox += safeBoxAmount;
+    }
 }

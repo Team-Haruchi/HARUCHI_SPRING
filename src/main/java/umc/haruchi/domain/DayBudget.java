@@ -1,6 +1,5 @@
 package umc.haruchi.domain;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -8,7 +7,7 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import umc.haruchi.domain.common.BaseEntity;
 import umc.haruchi.domain.enums.DayBudgetStatus;
-import umc.haruchi.domain.mapping.BudgetRedistribution;
+//import umc.haruchi.domain.mapping.BudgetRedistribution;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -39,9 +38,17 @@ public class DayBudget extends BaseEntity {
     @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'ACTIVE'")
     private DayBudgetStatus dayBudgetStatus;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "budget_redistribution_id")
-    private BudgetRedistribution budgetRedistribution;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "budget_redistribution_id")
+//    private BudgetRedistribution budgetRedistribution;
+
+    @OneToMany(mappedBy = "budgetRedistribution", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<PullMinusClosing> pullMinusClosings = new ArrayList<>();
+
+    @OneToMany(mappedBy = "budgetRedistribution", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<PushPlusClosing> pushPlusClosings = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "month_budget_id")
@@ -68,5 +75,11 @@ public class DayBudget extends BaseEntity {
             DayBudget += (int)amount;
     }
 
+    public void pushAmount(Integer distributedAmount) {
+        DayBudget += distributedAmount;
+    }
 
+    public void subAmount(Integer tossAmount) {
+        DayBudget -= tossAmount;
+    }
 }
