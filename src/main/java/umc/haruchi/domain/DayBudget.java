@@ -27,7 +27,7 @@ public class DayBudget extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private Integer day;
+    private Long day;
 
     @Column(nullable = false)
     @ColumnDefault("0")
@@ -68,7 +68,7 @@ public class DayBudget extends BaseEntity {
     @PrePersist
     public void prePersist() {
         LocalDate now = LocalDate.now();
-        this.day = now.getDayOfMonth();
+        this.day = (long) now.getDayOfMonth();
     }
 
     public void setIncome(long amount, int how) {
