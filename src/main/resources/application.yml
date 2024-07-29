@@ -33,4 +33,4 @@ spring:
     type: redis #redis를 설치하고 redis-cli.exe를 실행해야 함
 
   jwt:
-    secret: nR5cCI6IxpoNGY8ZVziIyMDIwMjJ9hbGciOyJzCJe8bGwv
+    secret: ${JWT_SECRET}
