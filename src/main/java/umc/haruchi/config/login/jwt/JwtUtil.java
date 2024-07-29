@@ -61,13 +61,11 @@ public class JwtUtil implements InitializingBean {
 
     public boolean validateToken(String token) {
         try {
-            return Jwts.parser()
+            Jwts.parser()
                     .verifyWith(secretKey)
                     .build()
-                    .parseSignedClaims(token)
-                    .getPayload()
-                    .getExpiration()
-                    .before(new Date());
+                    .parseSignedClaims(token);
+            return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("잘못된 JWT 서명입니다.");
             throw new JwtException(ErrorStatus.WRONG_TYPE_SIGNATURE.getMessage());
