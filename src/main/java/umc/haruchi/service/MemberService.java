@@ -113,12 +113,12 @@ public class MemberService {
 
     // 이메일 인증 번호 redis에 저장
     public void saveVerificationCode(String email, String code) {
-        redisTemplate.opsForValue().set(email, code, 130, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set("emailVerify" + email, code, 130, TimeUnit.SECONDS);
     }
 
     // 이메일 인증 번호 redis에서 얻기
     public String getVerificationCode(String email) {
-        return (String) redisTemplate.opsForValue().get(email);
+        return (String) redisTemplate.opsForValue().get("emailVerify" + email);
     }
 
     // 인증 번호로 이메일 인증
