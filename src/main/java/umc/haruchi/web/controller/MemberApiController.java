@@ -8,8 +8,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import umc.haruchi.apiPayload.ApiResponse;
+import umc.haruchi.config.login.auth.MemberDetail;
 import umc.haruchi.config.login.jwt.JwtTokenService;
 import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.domain.Member;
@@ -85,25 +87,46 @@ public class MemberApiController {
 
     @PostMapping("/refresh") // 오류 발생 -> 헤더 인식 불가능
     @Operation(summary = "액세스 토큰과 리프레시 토큰 재발급 API", description = "리프레시 토큰으로 액세스 토큰과 리프레시 토큰을 재발급하는 API")
+    @Parameters({
+            @Parameter(name = "refreshToken", description = "리프레시 토큰")
+    })
     public ApiResponse<MemberResponseDTO.LoginJwtTokenDTO> refreshToken(@RequestParam("refreshToken") String refreshToken) {
         MemberResponseDTO.LoginJwtTokenDTO tokens = jwtTokenService.refresh(refreshToken);
         return ApiResponse.onSuccess(tokens);
     }
 
     @PostMapping("/logout")
-    @Operation(summary = "로그아웃 API", description = "로그아웃을 진행하는 API")
+    @Operation(summary = "로그아웃 API", description = "로그아웃을 진행하는 API (토큰 만료)")
+    @Parameters({
+            @Parameter(name = "token", description = "액세스 토큰 또는 리프레시 토큰")
+    })
     public ApiResponse<MemberResponseDTO> logout(@RequestParam("token") String token) {
         jwtTokenService.expire(token, "LOGOUT");
         return ApiResponse.onSuccess(null);
     }
 
     @PostMapping("/delete")
-    @Operation(summary = "회원탈퇴 API", description = "회원탈퇴를 진행하는 API")
+    @Operation(summary = "회원탈퇴 API", description = "회원탈퇴를 진행하는 API (토큰 만료 및 회원 영구 삭제)")
     public ApiResponse<MemberResponseDTO> deleteMember(@Valid @RequestBody MemberRequestDTO.MemberWithdrawRequestDTO request) {
         String token = request.getToken();
         String reason = request.getReason();
         jwtTokenService.expire(token, "INACTIVE");
         memberService.withdrawer(reason);
         return ApiResponse.onSuccess(null);
+    }
+
+    @GetMapping("/")
+    @Operation(summary = "회원정보조회 API", description = "헤더에 있는 토큰으로 회원을 식별하고, 더보기 화면에서 회원의 정보를 조회하는 API")
+    public ApiResponse<MemberResponseDTO.MemberDetailResultDTO> getMemberDetail(@AuthenticationPrincipal MemberDetail memberDetail) {
+        String email = memberDetail.getMember().getEmail();
+        return ApiResponse.onSuccess(memberService.getMemberDetail(email));
+    }
+
+    @GetMapping("/safebox")
+    @Operation(summary = "회원 세이프박스 조회 API", description = "헤더에 있는 토큰으로 회원을 식별하고, 회원의 세이프박스 금액 조회하는 API")
+    public ApiResponse<Long> getMemberSafeBox(@AuthenticationPrincipal MemberDetail memberDetail) {
+        String email = memberDetail.getMember().getEmail();
+        Long safeBox = memberService.getMemberSafeBox(email);
+        return ApiResponse.onSuccess(safeBox);
     }
 }

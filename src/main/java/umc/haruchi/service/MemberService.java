@@ -113,12 +113,12 @@ public class MemberService {
 
     // 이메일 인증 번호 redis에 저장
     public void saveVerificationCode(String email, String code) {
-        redisTemplate.opsForValue().set(email, code, 130, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set("emailVerify" + email, code, 130, TimeUnit.SECONDS);
     }
 
     // 이메일 인증 번호 redis에서 얻기
     public String getVerificationCode(String email) {
-        return (String) redisTemplate.opsForValue().get(email);
+        return (String) redisTemplate.opsForValue().get("emailVerify" + email);
     }
 
     // 인증 번호로 이메일 인증
@@ -171,34 +171,20 @@ public class MemberService {
         withdrawerRepository.save(withdrawer);
     }
 
-    // 혹시 몰라 남겨둠
-//    public MemberResponseDTO.LoginJwtTokenDTO login(MemberRequestDTO.MemberLoginDTO request) {
-//
-//        String email = request.getEmail();
-//        String password = request.getPassword();
-//        Member member = memberRepository.findByEmail(email).orElse(null);
-//
-//        if (member == null) {
-//            throw new UsernameNotFoundException("이메일이 존재하지 않습니다.");
-//        }
-//
-//        if (!encoder.matches(password, member.getPassword())) {
-//            throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
-//        }
-//
-////        // Login email/password를 기반으로 Authentication 객체 생성
-////        UsernamePasswordAuthenticationToken authenticationToken = request.toAuthenticationToken();
-////
-////        // 실제 검증 (사용자 비밀번호 체크)이 이루어지는 부분
-////        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-////
-////        // 검증된 인증 정보로 JWT token 생성
-////        MemberResponseDTO.LoginJwtTokenDTO token = jwtUtil.generateToken(authentication);
-////
-////        redisTemplate.opsForValue()
-////                .set("RT:" + authentication.getName(), token.getRefreshToken(), token.getRefreshTokenExpirationTime(), TimeUnit.MILLISECONDS);
-////
-////        return token;
-//        return null;
-//    }
+    // 회원 더보기 정보(가입일, 가입 이메일, 닉네임) 조회
+    public MemberResponseDTO.MemberDetailResultDTO getMemberDetail(String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
+        return MemberResponseDTO.MemberDetailResultDTO.builder()
+                .name(member.getName())
+                .email(member.getEmail())
+                .createdAt(member.getCreatedAt()).build();
+    }
+
+    // 회원의 세이프박스 금액 조회
+    public Long getMemberSafeBox(String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
+        return member.getSafeBox();
+    }
 }

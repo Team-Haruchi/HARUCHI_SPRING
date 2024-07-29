@@ -1,21 +1,16 @@
 package umc.haruchi.config.login.jwt;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import umc.haruchi.apiPayload.ApiResponse;
-import umc.haruchi.apiPayload.exception.handler.JwtExpiredHandler;
-import umc.haruchi.apiPayload.exception.handler.JwtInvalidHandler;
 
 import java.io.IOException;
 
@@ -28,40 +23,46 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenService jwtTokenService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-//        String accessToken = request.getHeader("Authorization");
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
         String token = resolveToken(request);
-        if (token == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        if (jwtUtil.isExpired(token)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
-        try {
-            jwtUtil.validateToken(token);
-            JwtUtil.validateAccessToken(token); // 생략해도 될까?
-
+        if (token != null && jwtUtil.validateToken(token)) {
+            jwtTokenService.checkExpired(token); // redis 적용 시 삭제
             Authentication authentication = jwtUtil.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            jwtTokenService.checkExpired(token);
-        } catch (JwtExpiredHandler e) {
-            response.setContentType("application/json");
-            ApiResponse<Object> apiResponse =
-                    ApiResponse.onFailure(HttpStatus.NOT_FOUND.name(), "MEMBER4027", "Invalid token is not found.");
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.writeValue(response.getWriter(), apiResponse);
-            return;
-        } catch (JwtInvalidHandler e) {
-            response.setContentType("application/json");
-            ApiResponse<Object> apiResponse =
-                    ApiResponse.onFailure(HttpStatus.UNAUTHORIZED.name(), "MEMBER4022", "Invalid token.");
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.writeValue(response.getWriter(), apiResponse);
-            return;
         }
+//        if (token == null) {
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
+//        if (jwtUtil.isExpired(token)) {
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
+//
+//        try {
+//            jwtUtil.validateToken(token);
+//            JwtUtil.validateAccessToken(token); // 생략해도 될까?
+//
+//            Authentication authentication = jwtUtil.getAuthentication(token);
+//            SecurityContextHolder.getContext().setAuthentication(authentication);
+//            jwtTokenService.checkExpired(token);
+//        } catch (JwtExpiredHandler e) {
+//            response.setContentType("application/json");
+//            ApiResponse<Object> apiResponse =
+//                    ApiResponse.onFailure(HttpStatus.NOT_FOUND.name(), "MEMBER4027", "Invalid token is not found.");
+//            ObjectMapper objectMapper = new ObjectMapper();
+//            objectMapper.writeValue(response.getWriter(), apiResponse);
+//            return;
+//        } catch (JwtInvalidHandler e) {
+//            response.setContentType("application/json");
+//            ApiResponse<Object> apiResponse =
+//                    ApiResponse.onFailure(HttpStatus.UNAUTHORIZED.name(), "MEMBER4022", "Invalid token.");
+//            ObjectMapper objectMapper = new ObjectMapper();
+//            objectMapper.writeValue(response.getWriter(), apiResponse);
+//            return;
+//        }
         filterChain.doFilter(request, response);
 
     }

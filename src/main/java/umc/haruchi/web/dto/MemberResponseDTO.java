@@ -23,11 +23,20 @@ public class MemberResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class LoginJwtTokenDTO {
-        private String grantType;
-        private String accessToken;
-        private Long accessTokenExpiresAt;
-        private String refreshToken;
-        private Long refreshTokenExpirationAt;
+        String grantType;
+        String accessToken;
+        Long accessTokenExpiresAt;
+        String refreshToken;
+        Long refreshTokenExpirationAt;
     }
 
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MemberDetailResultDTO {
+        LocalDateTime createdAt;
+        String email;
+        String name;
+    }
 }

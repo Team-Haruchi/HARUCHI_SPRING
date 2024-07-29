@@ -18,7 +18,7 @@ public class SwaggerConfig {
                 .description("HARUCHI Server API 명세서")
                 .version("1.0.0");
 
-        String jwtSchemeName = "JWT TOKEN";
+        String jwtSchemeName = "Authorization";
         SecurityRequirement securityRequirement = new SecurityRequirement().addList(jwtSchemeName);
         Components components = new Components()
                 .addSecuritySchemes(jwtSchemeName, new SecurityScheme()
