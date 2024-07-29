@@ -3,6 +3,7 @@ package umc.haruchi.config.login.jwt;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -11,6 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import umc.haruchi.apiPayload.code.status.ErrorStatus;
 import umc.haruchi.apiPayload.exception.handler.JwtExpiredHandler;
 import umc.haruchi.apiPayload.exception.handler.JwtInvalidHandler;
@@ -47,25 +49,37 @@ public class JwtUtil implements InitializingBean {
                 .get("email", String.class);
     }
 
+    public String resolveToken(HttpServletRequest request) {
+
+        String bearerToken = request.getHeader("Authorization");
+
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) { // 띄어쓰기 삭제
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()
+            return Jwts.parser()
                     .verifyWith(secretKey)
                     .build()
-                    .parseSignedClaims(token);
-            return true;
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .getExpiration()
+                    .before(new Date());
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("잘못된 JWT 서명입니다.");
-            throw new MemberHandler(ErrorStatus.WRONG_TYPE_SIGNATURE);
+            throw new JwtException(ErrorStatus.WRONG_TYPE_SIGNATURE.getMessage());
         } catch (ExpiredJwtException e) {
             log.info("만료된 JWT 토큰입니다.");
-            throw new MemberHandler(ErrorStatus.TOKEN_EXPIRED);
+            throw new JwtException(ErrorStatus.TOKEN_EXPIRED.getMessage());
         } catch (UnsupportedJwtException e) {
             log.info("지원되지 않는 JWT 토큰입니다.");
-            throw new MemberHandler(ErrorStatus.WRONG_TYPE_TOKEN);
+            throw new JwtException(ErrorStatus.WRONG_TYPE_TOKEN.getMessage());
         } catch (IllegalArgumentException e) {
             log.info("JWT 토큰이 잘못되었습니다.");
-            throw new MemberHandler(ErrorStatus.NOT_VALID_TOKEN);
+            throw new JwtException(ErrorStatus.NOT_VALID_TOKEN.getMessage());
         }
     }
 

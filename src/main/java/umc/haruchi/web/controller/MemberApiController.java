@@ -85,6 +85,9 @@ public class MemberApiController {
 
     @PostMapping("/refresh") // 오류 발생 -> 헤더 인식 불가능
     @Operation(summary = "액세스 토큰과 리프레시 토큰 재발급 API", description = "리프레시 토큰으로 액세스 토큰과 리프레시 토큰을 재발급하는 API")
+    @Parameters({
+            @Parameter(name = "refreshToken", description = "리프레시 토큰")
+    })
     public ApiResponse<MemberResponseDTO.LoginJwtTokenDTO> refreshToken(@RequestParam("refreshToken") String refreshToken) {
         MemberResponseDTO.LoginJwtTokenDTO tokens = jwtTokenService.refresh(refreshToken);
         return ApiResponse.onSuccess(tokens);
@@ -92,6 +95,9 @@ public class MemberApiController {
 
     @PostMapping("/logout")
     @Operation(summary = "로그아웃 API", description = "로그아웃을 진행하는 API")
+    @Parameters({
+            @Parameter(name = "token", description = "액세스 토큰 또는 리프레시 토큰")
+    })
     public ApiResponse<MemberResponseDTO> logout(@RequestParam("token") String token) {
         jwtTokenService.expire(token, "LOGOUT");
         return ApiResponse.onSuccess(null);
