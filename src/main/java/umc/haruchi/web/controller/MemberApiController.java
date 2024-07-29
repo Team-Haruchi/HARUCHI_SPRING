@@ -8,8 +8,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import umc.haruchi.apiPayload.ApiResponse;
+import umc.haruchi.config.login.auth.MemberDetail;
 import umc.haruchi.config.login.jwt.JwtTokenService;
 import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.domain.Member;
@@ -111,5 +113,20 @@ public class MemberApiController {
         jwtTokenService.expire(token, "INACTIVE");
         memberService.withdrawer(reason);
         return ApiResponse.onSuccess(null);
+    }
+
+    @GetMapping("/")
+    @Operation(summary = "회원정보조회 API", description = "더보기 화면에서 회원의 정보를 조회하는 API")
+    public ApiResponse<MemberResponseDTO.MemberDetailResultDTO> getMemberDetail(@AuthenticationPrincipal MemberDetail memberDetail) {
+        String email = memberDetail.getMember().getEmail();
+        return ApiResponse.onSuccess(memberService.getMemberDetail(email));
+    }
+
+    @GetMapping("/safebox")
+    @Operation(summary = "회원 세이프박스 조회 API", description = "특정 회원의 세이프박스 금액 조회 API")
+    public ApiResponse<Long> getMemberSafeBox(@AuthenticationPrincipal MemberDetail memberDetail) {
+        String email = memberDetail.getMember().getEmail();
+        Long safeBox = memberService.getMemberSafeBox(email);
+        return ApiResponse.onSuccess(safeBox);
     }
 }
