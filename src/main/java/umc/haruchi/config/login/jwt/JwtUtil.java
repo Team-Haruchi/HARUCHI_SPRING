@@ -14,9 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import umc.haruchi.apiPayload.code.status.ErrorStatus;
-import umc.haruchi.apiPayload.exception.handler.JwtExpiredHandler;
-import umc.haruchi.apiPayload.exception.handler.JwtInvalidHandler;
-import umc.haruchi.apiPayload.exception.handler.MemberHandler;
+import umc.haruchi.apiPayload.exception.handler.JwtExceptionHandler;
 import umc.haruchi.config.login.auth.MemberDetailService;
 
 import javax.crypto.SecretKey;
@@ -68,16 +66,16 @@ public class JwtUtil implements InitializingBean {
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("잘못된 JWT 서명입니다.");
-            throw new JwtException(ErrorStatus.WRONG_TYPE_SIGNATURE.getMessage());
+            throw new JwtExceptionHandler(ErrorStatus.WRONG_TYPE_SIGNATURE.getMessage(), e);
         } catch (ExpiredJwtException e) {
             log.info("만료된 JWT 토큰입니다.");
-            throw new JwtException(ErrorStatus.TOKEN_EXPIRED.getMessage());
+            throw new JwtExceptionHandler(ErrorStatus.TOKEN_EXPIRED.getMessage(), e);
         } catch (UnsupportedJwtException e) {
             log.info("지원되지 않는 JWT 토큰입니다.");
-            throw new JwtException(ErrorStatus.WRONG_TYPE_TOKEN.getMessage());
+            throw new JwtExceptionHandler(ErrorStatus.WRONG_TYPE_TOKEN.getMessage(), e);
         } catch (IllegalArgumentException e) {
             log.info("JWT 토큰이 잘못되었습니다.");
-            throw new JwtException(ErrorStatus.NOT_VALID_TOKEN.getMessage());
+            throw new JwtExceptionHandler(ErrorStatus.NOT_VALID_TOKEN.getMessage(), e);
         }
     }
 
@@ -161,24 +159,6 @@ public class JwtUtil implements InitializingBean {
                 .expiration(new Date(System.currentTimeMillis()+refreshExpireMs))
                 .signWith(secretKey)
                 .compact();
-    }
-
-    public static boolean validateAccessToken(String accessToken) {
-        try {
-            return Jwts.parser()
-                    .verifyWith(secretKey)
-                    .build()
-                    .parseSignedClaims(accessToken)
-                    .getPayload()
-                    .getExpiration()
-                    .before(new Date());
-        } catch (ExpiredJwtException e) {
-            throw new JwtExpiredHandler("Expired Token Exception");
-        } catch (UnsupportedJwtException | SecurityException | MalformedJwtException | NullPointerException e) {
-            throw new JwtInvalidHandler("Invalid Token Exception");
-        } catch (Exception e) {
-            return false;
-        }
     }
 }
 

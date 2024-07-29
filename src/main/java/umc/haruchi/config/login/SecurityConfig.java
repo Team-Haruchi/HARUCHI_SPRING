@@ -15,6 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import umc.haruchi.apiPayload.exception.handler.JwtExceptionHandler;
 import umc.haruchi.config.login.jwt.*;
 
 import java.util.Collections;
@@ -28,6 +29,8 @@ public class SecurityConfig {
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtUtil jwtUtil;
     private final JwtTokenService jwtTokenService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtExceptionHandlerFilter jwtExceptionHandlerFilter;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -80,7 +83,8 @@ public class SecurityConfig {
 //                        .requestMatchers("/budget-redistribution/**").authenticated()
                         .anyRequest().permitAll())
 //                        .anyRequest().authenticated())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, jwtTokenService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtExceptionHandlerFilter, JwtAuthenticationFilter.class);
         return http.build();
     }
 }
