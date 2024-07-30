@@ -5,5 +5,5 @@ import umc.haruchi.domain.MonthBudget;
 
 public interface MonthBudgetRepository extends JpaRepository<MonthBudget, Long> {
 
-    MonthBudget findByMemberIdAndYearAndMonth(Long memberId, int year, int month);
+    Optional<MonthBudget> findByMemberIdAndYearAndMonth(Long memberId, int year, int month);
 }
