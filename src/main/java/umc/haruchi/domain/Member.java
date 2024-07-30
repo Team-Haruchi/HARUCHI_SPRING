@@ -23,8 +23,8 @@ public class Member extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, columnDefinition = "bigint default 0")
-    private Long monthBudget;
+    //@Column(nullable = false, columnDefinition = "bigint default 0")
+    //private Long monthBudget;
 
     @Column(nullable = false, length = 5)
     private String name;
