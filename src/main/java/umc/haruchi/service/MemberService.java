@@ -14,15 +14,19 @@ import umc.haruchi.apiPayload.code.status.ErrorStatus;
 import umc.haruchi.apiPayload.exception.handler.MemberHandler;
 import umc.haruchi.config.login.jwt.JwtUtil;
 import umc.haruchi.converter.MemberConverter;
+import umc.haruchi.converter.MonthBudgetConverter;
 import umc.haruchi.domain.Member;
 import umc.haruchi.domain.MemberToken;
+import umc.haruchi.domain.MonthBudget;
 import umc.haruchi.domain.Withdrawer;
 import umc.haruchi.repository.MemberRepository;
 import umc.haruchi.repository.MemberTokenRepository;
 import umc.haruchi.repository.WithdrawerRepository;
 import umc.haruchi.web.dto.MemberRequestDTO;
 import umc.haruchi.web.dto.MemberResponseDTO;
+import umc.haruchi.web.dto.MonthBudgetRequestDTO;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -40,6 +44,8 @@ public class MemberService {
 
     public static int code;
 
+    private final MonthBudgetService monthBudgetService;
+
     // 회원가입
     @Transactional
     public Member joinMember(MemberRequestDTO.MemberJoinDTO request) throws Exception {
@@ -56,6 +62,11 @@ public class MemberService {
 
         Member newMember = MemberConverter.toMember(request);
         newMember.encodePassword(passwordEncoder.encode(request.getPassword()));
+
+        //회원가입 시 monthBudget 생성
+        MonthBudget monthBudget = MonthBudgetConverter.toMonthBudget(request.getMonthBudget());
+        monthBudget.setMember(newMember);
+
         return memberRepository.save(newMember);
     }
 

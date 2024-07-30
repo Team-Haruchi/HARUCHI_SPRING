@@ -36,13 +36,8 @@ public class MonthBudgetService {
         MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, today.getYear(), today.getMonthValue())
                 .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.MONTH_BUDGET_NOT_FOUND));
 
-        //monthBudget이 request body에 전달되었는지 확인
-        if(request.getMonthBudget() == null)
-            throw new MonthBudgetHandler(ErrorStatus.NOT_MONTH_BUDGET);
-
-        if(!(request.getMonthBudget() > 0))
-            throw new MonthBudgetHandler(ErrorStatus.NOT_MONTH_BUDGET);
         monthBudget.updateMonthBudget(request.getMonthBudget());
-        return monthBudget;
+
+        return monthBudgetRepository.save(monthBudget);
     }
 }
