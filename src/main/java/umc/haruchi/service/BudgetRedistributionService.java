@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.apiPayload.exception.handler.BudgetRedistributionHandler;
 import umc.haruchi.apiPayload.exception.handler.DayBudgetHandler;
 import umc.haruchi.apiPayload.exception.handler.MemberHandler;
+import umc.haruchi.apiPayload.exception.handler.MonthBudgetHandler;
 import umc.haruchi.converter.BudgetRedistributionConverter;
 import umc.haruchi.domain.*;
 import umc.haruchi.repository.*;
@@ -38,7 +39,8 @@ public class BudgetRedistributionService {
     public PushPlusClosing push(BudgetRedistributionRequestDTO.createPushDTO request, Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(NO_MEMBER_EXIST)); //영속화
-        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), year, month);
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), year, month)
+                .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
         DayBudget sourceBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getSourceDay());
 
         long totalAmount = request.getAmount();
@@ -131,7 +133,9 @@ public class BudgetRedistributionService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(NO_MEMBER_EXIST)); //영속화
 
-        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), year, month);
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), year, month)
+                .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
+
         DayBudget targetBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getTargetDay());
         long totalAmount = request.getAmount();
         int tossAmount = (int) (roundDownToNearestHundred(totalAmount));
