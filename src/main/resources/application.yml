@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: "jdbc:mysql://localhost:3306/haruchi" #${DEV_MYSQL_URL}
-    username: "root" #${DEV_MYSQL_USERNAME}
-    password: "*1378jj*" #${DEV_MYSQL_PASSWORD}
+    url: ${DEV_MYSQL_URL}
+    username: ${DEV_MYSQL_USERNAME}
+    password: ${DEV_MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
