@@ -50,4 +50,17 @@ public class MonthBudget extends BaseEntity {
         this.month = now.getMonthValue();
     }
 
+    public void setMember(Member member) {
+        if(this.member != null)
+            member.getMonthBudgetList().remove(this);
+        this.member = member;
+        member.getMonthBudgetList().add(this);
+    }
+
+    public void updateMonthBudget(Long monthBudget) {
+        LocalDate now = LocalDate.now();
+        this.year = now.getYear();
+        this.month = now.getMonthValue();
+        this.monthBudget = monthBudget;
+    }
 }
