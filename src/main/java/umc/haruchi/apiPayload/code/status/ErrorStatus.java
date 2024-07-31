@@ -42,6 +42,7 @@ public enum ErrorStatus implements BaseErrorCode {
     NO_REDISTRIBUTION_OPTION(HttpStatus.BAD_REQUEST, "REDISTRIBUTION4006", "해당하는 재분배 옵션이 존재하지 않습니다."),
     LACK_OF_MONEY(HttpStatus.BAD_REQUEST, "REDISTRIBUTION4007", "돈이 부족합니다."),
     OVER_OF_REMAINING_MONTH_BUDGET(HttpStatus.BAD_REQUEST, "REDISTRIBUTION4008", "당기는 금액이 남은 한달 예산을 초과합니다."),
+    FINAL_DAY(HttpStatus.BAD_REQUEST, "REDISTRIBUTION4009", "마지막 날에는 해당 기능을 사용할 수 없습니다."),
 
     // Income 관련 에러
     INCOME_NOT_EXIST(HttpStatus.NOT_FOUND, "INCOME4001", "해당 수입이 존재하지 않습니다."),

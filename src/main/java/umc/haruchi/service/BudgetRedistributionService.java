@@ -38,7 +38,6 @@ public class BudgetRedistributionService {
         DayBudget sourceBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getSourceDay());
 
         long totalAmount = request.getAmount();
-
         //target에 해당하는 daybudget 찾기
         DayBudget targetBudget = null;
         if (request.getTargetDay() != null) {
@@ -49,9 +48,17 @@ public class BudgetRedistributionService {
             throw new BudgetRedistributionHandler(INVALID_AMOUNT_RANGE);
         }
 
+        //이번 달 남은 일 수 알아내기(본인 제외)
+        long dayCount = monthBudget.getDayBudgetList().stream()
+                .filter(dayBudget -> dayBudget.getDay() >= day).count() - 1;
+
         //고르게 넘기기(233원씩 넘겨준다고하면 200원씩 분배하고 33원씩 * 일수 -> 세이프박스, 금액 차감된 source도 다시 확인 후 절사)
         if (request.getRedistributionOption().equals(EVENLY)) {
 
+            //dayCount가 0일때 -> 마지막 날일 때 예외처리
+            if(dayCount == 0) {
+                throw new BudgetRedistributionHandler(FINAL_DAY);
+            }
             if (targetBudget != null) {
                 throw new BudgetRedistributionHandler(TARGET_MUST_NULL);
             }
@@ -60,10 +67,6 @@ public class BudgetRedistributionService {
             }
             //source 날짜 찾기
             long sourceDay = sourceBudget.getDay();
-
-            //이번 달 남은 일 수 알아내기(본인 제외)
-            long dayCount = monthBudget.getDayBudgetList().stream()
-                    .filter(dayBudget -> dayBudget.getDay() >= day).count() - 1;
 
             // 금액 분배 계산
             long splitAmount = totalAmount / dayCount;
@@ -108,7 +111,11 @@ public class BudgetRedistributionService {
             member.addSafeBox(safeBoxAmount);
 
         } else if (request.getRedistributionOption().equals(DATE)) {
-            // 특정 날짜로 넘기기(233원을 넘겨준다고하면 200원만 넘기고 33원 -> 세이프박스, source도 다시 확인 후 절사(67원) = 100원)
+
+            //dayCount가 0일때 -> 마지막 날일 때 예외처리
+            if(dayCount == 0) {
+                throw new BudgetRedistributionHandler(FINAL_DAY);
+            }
 
             if (targetBudget == null) {
                 throw new BudgetRedistributionHandler(TARGET_IS_NULL);
@@ -179,18 +186,23 @@ public class BudgetRedistributionService {
         if (request.getAmount() < 0) {
             throw new BudgetRedistributionHandler(INVALID_AMOUNT_RANGE);
         }
+        //이번 달 남은 일 수 알아내기
+        long dayCount = monthBudget.getDayBudgetList().stream()
+                .filter(dayBudget -> dayBudget.getDay() >= day).count() - 1;
 
         //고르게 당겨쓰기(233원씩 당겨온다고하면 200 * 일수 당겨와서 target에 저장, 233원씩 차감, 67원씩 세이프박스로))
         if (request.getRedistributionOption().equals(EVENLY)) {
+
+            //dayCount가 0일때 -> 마지막 날일 때 예외처리
+            if(dayCount == 0) {
+                throw new BudgetRedistributionHandler(FINAL_DAY);
+            }
+
             if (sourceBudget != null) {
                 throw new BudgetRedistributionHandler(SOURCE_MUST_NULL);
             }
             //target 날짜 찾기
             long targetDay = targetBudget.getDay();
-
-            //이번 달 남은 일 수 알아내기
-            long dayCount = monthBudget.getDayBudgetList().stream()
-                    .filter(dayBudget -> dayBudget.getDay() >= day).count() - 1;
 
             // 금액 분배 계산
             long splitAmount = totalAmount / dayCount;
@@ -237,6 +249,10 @@ public class BudgetRedistributionService {
 
         } else if (request.getRedistributionOption().equals(DATE)) {
             // 특정 날 당겨쓰기(233원 당겨온다고하면 200원을 당겨와서 target에 저장, 33원은 세이프박스, source에 67원도 절사해서 세이프박스 = 100))
+            //dayCount가 0일때 -> 마지막 날일 때 예외처리
+            if(dayCount == 0) {
+                throw new BudgetRedistributionHandler(FINAL_DAY);
+            }
 
             if (sourceBudget == null) {
                 throw new BudgetRedistributionHandler(SOURCE_IS_NULL);
@@ -294,11 +310,17 @@ public class BudgetRedistributionService {
                 .filter(budget -> budget.getDay() >= request.getDay()).count() - 1;
 
         long totalAmount = request.getAmount();
-        long splitAmount = totalAmount / dayCount;
 
         //분배
         if (request.getAmount() > 0) {
             //고르게 넘기기(233원씩 넘겨준다고하면 200원씩 분배하고 33원씩 * 일수 -> 세이프박스)
+            //dayCount가 0일때 -> 마지막 날일 때 예외처리
+            if(dayCount == 0) {
+                throw new BudgetRedistributionHandler(FINAL_DAY);
+            }
+
+            long splitAmount = totalAmount / dayCount;
+
             if (request.getRedistributionOption().equals(EVENLY)) {
 
                 //10의 자리 이하 절사
@@ -367,13 +389,18 @@ public class BudgetRedistributionService {
 
         long totalAmount = -1 * request.getAmount(); //양수로 변경
 
-        // 금액 분배 계산
-        long splitAmount = totalAmount / dayCount;
         long safeBoxAmount = 0;
 
         //고르게 당기기(=차감하기)(233원씩 차감한다고하면 233원씩 차감, 각 날짜별 10이하 절사)
         //당길때 남은 날들의 예산 총합 < 차감할 금액 이면 세이프박스에서 꺼내서 1/n , 그 후 차감하면 음수인 날이 생길 수 있음
         if (request.getRedistributionOption().equals(EVENLY)) {
+            //dayCount가 0일때 -> 마지막 날일 때 예외처리
+            if(dayCount == 0) {
+                throw new BudgetRedistributionHandler(FINAL_DAY);
+            }
+
+            // 금액 분배 계산
+            long splitAmount = totalAmount / dayCount;
 
             if(totalAmount > monthBudget.getDayBudgetList().stream()
                     .filter(budget -> budget.getDay() > request.getDay())
