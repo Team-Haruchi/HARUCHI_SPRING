@@ -1,8 +1,10 @@
 package umc.haruchi.service;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.mail.Message;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.MailException;
@@ -11,14 +13,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.apiPayload.code.status.ErrorStatus;
+import umc.haruchi.apiPayload.exception.handler.JwtExceptionHandler;
 import umc.haruchi.apiPayload.exception.handler.MemberHandler;
 import umc.haruchi.config.login.jwt.JwtUtil;
 import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.domain.Member;
-import umc.haruchi.domain.MemberToken;
 import umc.haruchi.domain.Withdrawer;
 import umc.haruchi.repository.MemberRepository;
-import umc.haruchi.repository.MemberTokenRepository;
 import umc.haruchi.repository.WithdrawerRepository;
 import umc.haruchi.web.dto.MemberRequestDTO;
 import umc.haruchi.web.dto.MemberResponseDTO;
@@ -35,8 +36,8 @@ public class MemberService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
     private final RedisTemplate redisTemplate;
-    private final MemberTokenRepository memberTokenRepository;
     private final WithdrawerRepository withdrawerRepository;
+    private final JwtUtil jwtUtil;
 
     public static int code;
 
@@ -135,8 +136,6 @@ public class MemberService {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
 
-        member.setMemberStatusLogin();
-
         if (!passwordEncoder.matches(loginDto.getPassword(), member.getPassword())) {
             throw new MemberHandler(ErrorStatus.PASSWORD_NOT_MATCH);
         }
@@ -144,15 +143,11 @@ public class MemberService {
         // 30일 이상 미접속 시 로그아웃 되도록 토큰 유효시간을 수정
         String accessToken = JwtUtil.createAccessJwt(member.getId(), member.getEmail(), null);
         String refreshToken = JwtUtil.createRefreshJwt(member.getId(), member.getEmail(), null);
-        MemberToken token = MemberToken.builder()
-                .member(member)
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
-        memberTokenRepository.save(token);
 
         Long accessExpiredAt = JwtUtil.getExpiration(accessToken);
         Long refreshExpiredAt = JwtUtil.getExpiration(refreshToken);
+
+        redisTemplate.opsForValue().set("RT" +  email, refreshToken, refreshExpiredAt, TimeUnit.MILLISECONDS);
 
         return MemberResponseDTO.LoginJwtTokenDTO.builder()
                 .grantType("Bearer")
@@ -161,6 +156,59 @@ public class MemberService {
                 .accessTokenExpiresAt(accessExpiredAt)
                 .refreshTokenExpirationAt(refreshExpiredAt)
                 .build();
+    }
+
+    // 토큰 재발급
+    public MemberResponseDTO.LoginJwtTokenDTO reissue(String refreshToken) {
+
+        if (!jwtUtil.validateToken(refreshToken)) {
+            throw new JwtExceptionHandler(ErrorStatus.NOT_VALID_TOKEN.getMessage());
+        }
+
+        String email = jwtUtil.getEmail(refreshToken);
+
+        Object o = redisTemplate.opsForValue().get("RT" + email);
+        if (o == null) {
+            throw new JwtExceptionHandler(ErrorStatus.NO_MATCH_REFRESHTOKEN.getMessage());
+        }
+
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
+
+        String newAccessToken = JwtUtil.createAccessJwt(member.getId(), member.getEmail(), null);
+        String newRefreshToken = JwtUtil.createRefreshJwt(member.getId(), member.getEmail(), null);
+
+        Long accessExpiredAt = JwtUtil.getExpiration(newAccessToken);
+        Long refreshExpiredAt = JwtUtil.getExpiration(newRefreshToken);
+
+        redisTemplate.opsForValue().set("RT" + member.getEmail(), newRefreshToken, refreshExpiredAt, TimeUnit.MILLISECONDS);
+
+        return MemberResponseDTO.LoginJwtTokenDTO.builder()
+                .grantType("Bearer")
+                .accessToken(newAccessToken)
+                .accessTokenExpiresAt(accessExpiredAt)
+                .refreshToken(newRefreshToken)
+                .refreshTokenExpirationAt(refreshExpiredAt)
+                .build();
+    }
+
+    // 로그아웃 (토큰 블랙리스트에 저장)
+    public void logout(String accessToken, String refreshToken) {
+
+        try {
+            jwtUtil.validateToken(accessToken);
+        } catch (JwtExceptionHandler e) {
+            throw new JwtExceptionHandler(ErrorStatus.NOT_VALID_TOKEN.getMessage());
+        }
+
+        String email = jwtUtil.getEmail(accessToken);
+
+        if (redisTemplate.opsForValue().get("RT" + email) != null) {
+            redisTemplate.delete("RT" + email);
+        }
+
+        Long expiration = JwtUtil.getExpiration(accessToken);
+        redisTemplate.opsForValue().set(accessToken, "logout", expiration, TimeUnit.MILLISECONDS);
     }
 
     // 회원 즉시 탈퇴 - 이유 저장
@@ -179,12 +227,5 @@ public class MemberService {
                 .name(member.getName())
                 .email(member.getEmail())
                 .createdAt(member.getCreatedAt()).build();
-    }
-
-    // 회원의 세이프박스 금액 조회
-    public Long getMemberSafeBox(String email) {
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
-        return member.getSafeBox();
     }
 }

@@ -64,8 +64,11 @@ public class MemberRequestDTO {
     @Getter
     public static class MemberWithdrawRequestDTO {
 
-        @NotBlank(message = "토큰 값은 필수 입력 값입니다.")
-        private String token;
+        @NotBlank(message = "액세스 토큰 값은 필수 입력 값입니다.")
+        private String accessToken;
+
+        @NotBlank(message = "리프레시 토큰 값은 필수 입력 값입니다.")
+        private String refreshToken;
 
         @NotBlank(message = "탈퇴 이유는 필수 입력 값입니다.")
         @Length(min = 1, max = 20)
