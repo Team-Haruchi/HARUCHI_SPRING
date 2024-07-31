@@ -1,10 +1,8 @@
 package umc.haruchi.service;
 
-import io.jsonwebtoken.JwtException;
 import jakarta.mail.Message;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.MailException;
@@ -193,7 +191,7 @@ public class MemberService {
     }
 
     // 로그아웃 (토큰 블랙리스트에 저장)
-    public void logout(String accessToken, String refreshToken) {
+    public void logout(String accessToken, String refreshToken, String type) {
 
         try {
             jwtUtil.validateToken(accessToken);
@@ -209,6 +207,12 @@ public class MemberService {
 
         Long expiration = JwtUtil.getExpiration(accessToken);
         redisTemplate.opsForValue().set(accessToken, "logout", expiration, TimeUnit.MILLISECONDS);
+
+        if (type.equals("DELETE")) {
+            Member member = memberRepository.findByEmail(email)
+                    .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
+            memberRepository.delete(member);
+        }
     }
 
     // 회원 즉시 탈퇴 - 이유 저장
