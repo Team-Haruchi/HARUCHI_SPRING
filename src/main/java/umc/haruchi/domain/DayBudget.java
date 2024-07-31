@@ -65,7 +65,7 @@ public class DayBudget extends BaseEntity {
     //@Builder.Default
     private List<Expenditure> expenditureList = new ArrayList<>();
 
-    @PrePersist
+    //@PrePersist
     public void prePersist() {
         LocalDate now = LocalDate.now();
         this.day = (long) now.getDayOfMonth();

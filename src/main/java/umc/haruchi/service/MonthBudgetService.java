@@ -7,15 +7,23 @@ import umc.haruchi.apiPayload.ApiResponse;
 import umc.haruchi.apiPayload.code.status.ErrorStatus;
 import umc.haruchi.apiPayload.exception.handler.DayBudgetHandler;
 import umc.haruchi.apiPayload.exception.handler.MonthBudgetHandler;
+import umc.haruchi.converter.DayBudgetConverter;
 import umc.haruchi.domain.DayBudget;
 import umc.haruchi.domain.Member;
 import umc.haruchi.domain.MonthBudget;
+import umc.haruchi.domain.enums.DayBudgetStatus;
+import umc.haruchi.repository.DayBudgetRepository;
 import umc.haruchi.repository.MemberRepository;
 import umc.haruchi.repository.MonthBudgetRepository;
+import umc.haruchi.web.dto.DayBudgetRequestDTO;
 import umc.haruchi.web.dto.MonthBudgetRequestDTO;
 import umc.haruchi.web.dto.MonthBudgetResponseDTO;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +31,7 @@ import java.time.LocalDate;
 public class MonthBudgetService {
     private final MonthBudgetRepository monthBudgetRepository;
     private final MemberRepository memberRepository;
+    private final DayBudgetRepository dayBudgetRepository;
 
     @Transactional
     public MonthBudget updateMonthBudget(Long memberId, MonthBudgetRequestDTO.UpdateMonthDTO request) {
@@ -38,6 +47,60 @@ public class MonthBudgetService {
 
         monthBudget.updateMonthBudget(request.getMonthBudget());
 
+        //하루 예산 재분배하여 저장
+        List<DayBudget> dayBudgets = distributeDayBudgets(memberId, monthBudget);
+
+        dayBudgetRepository.saveAll(dayBudgets);
         return monthBudgetRepository.save(monthBudget);
     }
+
+    @Transactional
+    public List<DayBudget> distributeDayBudgets(Long memberId, MonthBudget monthBudget) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.NO_MEMBER_EXIST));
+
+        //현재 날짜
+        LocalDate now = LocalDate.now();
+        int nowDay = 5;//now.getDayOfMonth();
+
+        int year = monthBudget.getYear();
+        int month = monthBudget.getMonth();
+        int dayInMonth = YearMonth.of(year, month).lengthOfMonth();
+
+        //남은 일자
+        int remainingDays = 26;//dayInMonth - nowDay + 1;
+
+        //남은 한달 예산
+        long monthBudgetAmount = monthBudget.getMonthBudget() - monthBudget.getUsedAmount();
+
+        //하루 예산
+        long dayBudgetAmount = monthBudgetAmount / remainingDays;
+
+        //10의자리 절사된 하루 예산
+        int distributedAmount = (int) (roundDownToNearestHundred(dayBudgetAmount));
+
+        //세이프박스에 넣을 금액
+        long safeBoxAmount = (dayBudgetAmount - distributedAmount) * remainingDays;
+
+        List<DayBudget> dayBudgets = new ArrayList<>();
+
+        //현재 일자의 전날까지는 status가 INACTIVE인 dayBudget을 생성하고
+        //현재 일자부터 말일까지는 status가 ACTIVE인 dayBudget 생성
+        for(long day = 1; day <= dayInMonth; day++) {
+            DayBudgetStatus status = (day < nowDay) ? DayBudgetStatus.INACTIVE : DayBudgetStatus.ACTIVE;
+            Integer nowDistributedAmount = (day < nowDay) ? 0 : distributedAmount;
+            DayBudget dayBudget = DayBudgetConverter.toDayBudget(nowDistributedAmount, day, status, monthBudget);
+            dayBudgets.add(dayBudget);
+        }
+
+        //절사한 값 세이프박스에 저장
+        member.addSafeBox(safeBoxAmount);
+
+        return dayBudgets;
+    }
+
+    private long roundDownToNearestHundred(long amount) {
+        return (amount / 100) * 100;
+    }
+
 }

@@ -36,5 +36,4 @@ public class DayBudgetResponseDTO {
         Long incomeId;
 
     }
-
 }

@@ -24,8 +24,8 @@ public class MonthBudgetController {
     //한달 예산 수정
     @Operation(summary = "한달 예산 수정 API", description = "본인의 한달 예산을 수정하는 API 입니다.")
     @PatchMapping("/")
-    public ApiResponse<MonthBudgetResponseDTO.UpdateMonthResultDTO> updateMonthBudget(@AuthenticationPrincipal MemberDetail memberDetail, @RequestBody @Valid MonthBudgetRequestDTO.UpdateMonthDTO request) {
-        MonthBudget monthBudget = monthBudgetService.updateMonthBudget(memberDetail.getMember().getId(), request);
+    public ApiResponse<MonthBudgetResponseDTO.UpdateMonthResultDTO> updateMonthBudget(@RequestParam(name = "memberId") Long memberId, @RequestBody @Valid MonthBudgetRequestDTO.UpdateMonthDTO request) {
+        MonthBudget monthBudget = monthBudgetService.updateMonthBudget(memberId, request);
         return ApiResponse.onSuccess(MonthBudgetConverter.toUpdateMonthResultDTO(monthBudget));
     }
 }

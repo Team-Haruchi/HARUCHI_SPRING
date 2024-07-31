@@ -2,13 +2,25 @@ package umc.haruchi.converter;
 
 import umc.haruchi.domain.DayBudget;
 import umc.haruchi.domain.Income;
+import umc.haruchi.domain.MonthBudget;
+import umc.haruchi.domain.enums.DayBudgetStatus;
 import umc.haruchi.web.dto.DayBudgetRequestDTO;
 import umc.haruchi.web.dto.DayBudgetResponseDTO;
+import umc.haruchi.web.dto.MonthBudgetResponseDTO;
 
 import java.time.LocalDate;
 import java.util.List;
 
 public class DayBudgetConverter {
+
+    public static DayBudget toDayBudget(Integer dayBudget, Long day, DayBudgetStatus status, MonthBudget monthBudget) {
+        return DayBudget.builder()
+                .dayBudget(dayBudget)
+                .day(day)
+                .dayBudgetStatus(status)
+                .monthBudget(monthBudget)
+                .build();
+    }
 
     public static DayBudgetResponseDTO.getDayBudget toGetDayBudget(Integer todayBudget) {
         return DayBudgetResponseDTO.getDayBudget.builder()
