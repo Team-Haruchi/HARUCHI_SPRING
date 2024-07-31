@@ -3,6 +3,7 @@ package umc.haruchi.config.login.jwt;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SecurityException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,10 +32,19 @@ public class JwtUtil implements InitializingBean {
     @Value("${spring.jwt.secret}")
     private String secret;
     private static SecretKey secretKey;
-    private static final Long accessExpireMs = 1000L * 60 * 60 * 2;
-    private static final Long refreshExpireMs = 1000L * 60 * 60 * 24 * 30;
+    private static Long accessExpireMs;
+    private static Long refreshExpireMs;
     private final MemberDetailService memberDetailService;
-    private final MemberRepository memberRepository;
+
+    @Value("${spring.jwt.token.access_expiration}")
+    private void setAccessExpireMs(Long expire) {
+        accessExpireMs = expire;
+    }
+
+    @Value("${spring.jwt.token.refresh_expiration}")
+    private void setRefreshExpireMs(Long expire) {
+        refreshExpireMs = expire;
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -68,7 +78,7 @@ public class JwtUtil implements InitializingBean {
                     .build()
                     .parseSignedClaims(token);
             return true;
-        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+        } catch (SecurityException | MalformedJwtException e) {
             log.info("잘못된 JWT 서명입니다.");
             throw new JwtExceptionHandler(ErrorStatus.WRONG_TYPE_SIGNATURE.getMessage(), e);
         } catch (ExpiredJwtException e) {

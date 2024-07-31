@@ -43,16 +43,6 @@ public class MemberService {
     @Transactional
     public Member joinMember(MemberRequestDTO.MemberJoinDTO request) throws Exception {
 
-        // 이용약관은 무조건 체크돼야 들어오므로 스킵함
-
-        // 이메일 인증 요청에서 미리 처리하니까 삭제해도 됨
-        checkDuplicatedEmail(request.getEmail());
-
-        // 이메일 인증 여부 확인 - 프론트에서 해결해준다면 삭제해도 됨
-        if (!request.isVerifiedEmail()) {
-            throw new MemberHandler(ErrorStatus.NOT_VERIFIED_EMAIL);
-        }
-
         Member newMember = MemberConverter.toMember(request);
         newMember.encodePassword(passwordEncoder.encode(request.getPassword()));
         return memberRepository.save(newMember);
@@ -190,7 +180,7 @@ public class MemberService {
                 .build();
     }
 
-    // 로그아웃 (토큰 블랙리스트에 저장)
+    // 로그아웃 (액세스 토큰 블랙리스트에 저장)
     public void logout(String accessToken, String refreshToken, String type) {
 
         try {
@@ -230,6 +220,6 @@ public class MemberService {
         return MemberResponseDTO.MemberDetailResultDTO.builder()
                 .name(member.getName())
                 .email(member.getEmail())
-                .createdAt(member.getCreatedAt()).build();
+                .createdAt(member.getCreatedAt().toLocalDate()).build();
     }
 }

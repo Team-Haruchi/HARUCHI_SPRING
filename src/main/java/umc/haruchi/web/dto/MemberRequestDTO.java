@@ -36,9 +36,6 @@ public class MemberRequestDTO {
         )
         @Length(min = 8, max = 30)
         private String password;
-
-        @NotNull(message = "true여야 회원가입을 진행할 수 있습니다.")
-        private boolean verifiedEmail; // 프론트에서 해결해준다면 삭제해도 됨
     }
 
     @Getter
