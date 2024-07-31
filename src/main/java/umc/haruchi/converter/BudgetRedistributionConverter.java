@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 public class BudgetRedistributionConverter {
 
-    public static PushPlusClosing toPushPlusClosing(BudgetRedistributionRequestDTO.createPushDTO requestDTO, DayBudget source, DayBudget target) {
+    public static PushPlusClosing toPush(BudgetRedistributionRequestDTO.createPushDTO requestDTO, DayBudget source, DayBudget target) {
         return PushPlusClosing.builder()
                 .closingOption(false)
                 .redistributionOption(requestDTO.getRedistributionOption())
@@ -20,13 +20,33 @@ public class BudgetRedistributionConverter {
                 .build();
     }
 
-    public static PullMinusClosing toPullMinusClosing(BudgetRedistributionRequestDTO.createPullDTO requestDTO, DayBudget source, DayBudget target) {
+    public static PullMinusClosing toPull(BudgetRedistributionRequestDTO.createPullDTO requestDTO, DayBudget source, DayBudget target) {
         return PullMinusClosing.builder()
                 .closingOption(false)
                 .redistributionOption(requestDTO.getRedistributionOption())
                 .amount(requestDTO.getAmount())
                 .sourceDayBudget(source)
                 .targetDayBudget(target)
+                .build();
+    }
+
+    public static PushPlusClosing toPlusClosing(BudgetRedistributionRequestDTO.createClosingDTO requestDTO, DayBudget dayBudget) {
+        return PushPlusClosing.builder()
+                .closingOption(true)
+                .redistributionOption(requestDTO.getRedistributionOption())
+                .amount(requestDTO.getAmount())
+                .sourceDayBudget(dayBudget)
+                .targetDayBudget(null)
+                .build();
+    }
+
+    public static PullMinusClosing toMinusClosing(BudgetRedistributionRequestDTO.createClosingDTO requestDTO, DayBudget dayBudget) {
+        return PullMinusClosing.builder()
+                .closingOption(true)
+                .redistributionOption(requestDTO.getRedistributionOption())
+                .amount(requestDTO.getAmount())
+                .sourceDayBudget(null)
+                .targetDayBudget(dayBudget)
                 .build();
     }
 
@@ -43,4 +63,19 @@ public class BudgetRedistributionConverter {
                 .createdAt(LocalDate.now())
                 .build();
     }
+
+    public static BudgetRedistributionResponseDTO.BudgetClosingResultDTO ToBudgetClosingResultDTO(PushPlusClosing pushPlusClosing) {
+        return BudgetRedistributionResponseDTO.BudgetClosingResultDTO.builder()
+                .closingId(pushPlusClosing.getId())
+                .createdAt(LocalDate.now())
+                .build();
+    }
+
+    public static BudgetRedistributionResponseDTO.BudgetClosingResultDTO ToBudgetClosingResultDTO(PullMinusClosing pullMinusClosing) {
+        return BudgetRedistributionResponseDTO.BudgetClosingResultDTO.builder()
+                .closingId(pullMinusClosing.getId())
+                .createdAt(LocalDate.now())
+                .build();
+    }
+
 }

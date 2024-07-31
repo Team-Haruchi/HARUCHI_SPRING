@@ -26,4 +26,13 @@ public class BudgetRedistributionResponseDTO {
         Long pullId;
         LocalDate createdAt;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BudgetClosingResultDTO {
+        Long closingId;
+        LocalDate createdAt;
+    }
 }

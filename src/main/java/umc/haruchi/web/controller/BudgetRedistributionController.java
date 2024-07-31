@@ -32,7 +32,29 @@ public class BudgetRedistributionController {
     @PostMapping("/pull")
     public ApiResponse<BudgetRedistributionResponseDTO.BudgetPullResultDTO> pullBudget(@RequestBody BudgetRedistributionRequestDTO.createPullDTO request,
                                                                                        @AuthenticationPrincipal MemberDetail memberDetail){
-        PullMinusClosing pushPlusClosing = budgetRedistributionService.pull(request, memberDetail.getMember().getId());
-        return ApiResponse.onSuccess(BudgetRedistributionConverter.ToBudgetPullResultDTO(pushPlusClosing));
+        PullMinusClosing pushMinusClosing = budgetRedistributionService.pull(request, memberDetail.getMember().getId());
+        return ApiResponse.onSuccess(BudgetRedistributionConverter.ToBudgetPullResultDTO(pushMinusClosing));
     }
+
+    @Operation(summary = "지출 마감 API", description = "지출 마감 API입니다. 음수,양수,0으로 넘겨주시고, 0일 떄 옵션은 null로 넘겨주세요")
+    @PostMapping("/closing")
+    public ApiResponse<BudgetRedistributionResponseDTO.BudgetClosingResultDTO> closingBudget(@RequestBody BudgetRedistributionRequestDTO.createClosingDTO request,
+                                                                                       @AuthenticationPrincipal MemberDetail memberDetail){
+        if(request.getAmount() >= 0) {
+            PushPlusClosing pushPlusClosing = budgetRedistributionService.closingPlusOrZero(request, memberDetail.getMember().getId());
+            return ApiResponse.onSuccess(BudgetRedistributionConverter.ToBudgetClosingResultDTO(pushPlusClosing));
+        }
+        else {
+            PullMinusClosing pullMinusClosing = budgetRedistributionService.closingMinus(request, memberDetail.getMember().getId());
+            return ApiResponse.onSuccess(BudgetRedistributionConverter.ToBudgetClosingResultDTO(pullMinusClosing));
+        }
+    }
+
+//    @Operation(summary = "지출 마감 영수증에서 고르게 분배하기 선택 시 얼마씩 분배/차감할 지 알려주는 API", description = "지출 마감 진행 API")
+//    @PostMapping("/closing/amount")
+//    public ApiResponse<BudgetRedistributionResponseDTO.BudgetClosingResultDTO> pullBudget(@RequestBody BudgetRedistributionRequestDTO.changeClosingDTO request,
+//                                                                                          @AuthenticationPrincipal MemberDetail memberDetail){
+//        PullMinusClosing pushPlusClosing = budgetRedistributionService.pull(request, memberDetail.getMember().getId());
+//        return ApiResponse.onSuccess(BudgetRedistributionConverter.ToBudgetPullResultDTO(pushPlusClosing));
+//    }
 }
