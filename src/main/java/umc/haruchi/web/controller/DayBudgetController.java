@@ -1,6 +1,7 @@
 package umc.haruchi.web.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +40,7 @@ public class DayBudgetController {
 
     @Operation(summary = "수입 등록 API", description = "하루 수입을 등록하는 API 입니다.")
     @PostMapping("/income")
-    public ApiResponse<DayBudgetResponseDTO.incomeReg> createIncome(@RequestBody DayBudgetRequestDTO.createIncomeDTO request,
+    public ApiResponse<DayBudgetResponseDTO.incomeReg> createIncome(@Valid @RequestBody DayBudgetRequestDTO.createIncomeDTO request,
                                                                     @AuthenticationPrincipal MemberDetail memberDetail){
         System.out.println("memberId는 바로" + memberDetail.getMember().getId());
         Income income = dayBudgetService.joinIncome(request, memberDetail.getMember().getId());
@@ -56,7 +57,7 @@ public class DayBudgetController {
 
     @Operation(summary = "지출 등록 API", description = "하루 지출을 등록하는 API 입니다.")
     @PostMapping("/expenditure")
-    public ApiResponse<DayBudgetResponseDTO.expenditureReg> createExpenditure(@RequestBody DayBudgetRequestDTO.createExpenditureDTO request,
+    public ApiResponse<DayBudgetResponseDTO.expenditureReg> createExpenditure(@Valid @RequestBody DayBudgetRequestDTO.createExpenditureDTO request,
                                                                               @AuthenticationPrincipal MemberDetail memberDetail){
         Expenditure expenditure = dayBudgetService.joinExpenditure(request, memberDetail.getMember().getId());
         return ApiResponse.onSuccess(DayBudgetConverter.toCreateExpenditure(expenditure));
