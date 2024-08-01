@@ -61,14 +61,14 @@ public class MonthBudgetService {
 
         //현재 날짜
         LocalDate now = LocalDate.now();
-        int nowDay = 5;//now.getDayOfMonth();
+        int nowDay = now.getDayOfMonth();
 
         int year = monthBudget.getYear();
         int month = monthBudget.getMonth();
         int dayInMonth = YearMonth.of(year, month).lengthOfMonth();
 
         //남은 일자
-        int remainingDays = 26;//dayInMonth - nowDay + 1;
+        int remainingDays = dayInMonth - nowDay + 1;
 
         //남은 한달 예산
         long monthBudgetAmount = monthBudget.getMonthBudget() - monthBudget.getUsedAmount();
