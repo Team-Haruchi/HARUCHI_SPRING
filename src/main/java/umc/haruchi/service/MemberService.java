@@ -19,7 +19,6 @@ import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.converter.MonthBudgetConverter;
 import umc.haruchi.domain.Member;
 
-import umc.haruchi.domain.MemberToken;
 import umc.haruchi.domain.MonthBudget;
 import umc.haruchi.domain.Withdrawer;
 import umc.haruchi.domain.DayBudget;
