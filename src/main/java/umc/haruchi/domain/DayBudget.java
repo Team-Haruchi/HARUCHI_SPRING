@@ -92,4 +92,8 @@ public class DayBudget extends BaseEntity {
     public void subAmount(Integer tossAmount) {
         dayBudget -= tossAmount;
     }
+
+    public void changeDayBudgetStatus() {
+        dayBudgetStatus = DayBudgetStatus.INACTIVE;
+    }
 }
