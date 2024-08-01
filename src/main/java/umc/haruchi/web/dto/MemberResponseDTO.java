@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class MemberResponseDTO {
@@ -35,7 +36,7 @@ public class MemberResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class MemberDetailResultDTO {
-        LocalDateTime createdAt;
+        LocalDate createdAt;
         String email;
         String name;
     }

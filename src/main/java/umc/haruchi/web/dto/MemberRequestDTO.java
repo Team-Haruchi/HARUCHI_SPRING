@@ -36,9 +36,6 @@ public class MemberRequestDTO {
         )
         @Length(min = 8, max = 30)
         private String password;
-
-        @NotNull(message = "true여야 회원가입을 진행할 수 있습니다.")
-        private boolean verifiedEmail; // 프론트에서 해결해준다면 삭제해도 됨
     }
 
     @Getter
@@ -64,8 +61,11 @@ public class MemberRequestDTO {
     @Getter
     public static class MemberWithdrawRequestDTO {
 
-        @NotBlank(message = "토큰 값은 필수 입력 값입니다.")
-        private String token;
+        @NotBlank(message = "액세스 토큰 값은 필수 입력 값입니다.")
+        private String accessToken;
+
+        @NotBlank(message = "리프레시 토큰 값은 필수 입력 값입니다.")
+        private String refreshToken;
 
         @NotBlank(message = "탈퇴 이유는 필수 입력 값입니다.")
         @Length(min = 1, max = 20)

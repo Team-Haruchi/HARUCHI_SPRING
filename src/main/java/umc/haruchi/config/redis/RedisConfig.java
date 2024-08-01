@@ -24,21 +24,21 @@ public class RedisConfig {
         return new LettuceConnectionFactory(host, port);
     }
 
-    @Bean
-    public RedisTemplate<?, ?> redisTemplate() {
-        RedisTemplate<byte[], byte[]> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory());
-        return redisTemplate;
-    }
-// 아래 있는 걸 쓸 수도 있음
 //    @Bean
-//    public RedisTemplate<String, Object> redisTemplate() {
-//        RedisTemplate<String, Object> template = new RedisTemplate<>();
-//        template.setConnectionFactory(redisConnectionFactory());
-//
-//        template.setKeySerializer(new StringRedisSerializer());
-//        template.setValueSerializer(new StringRedisSerializer());
-//
-//        return template;
+//    public RedisTemplate<?, ?> redisTemplate() {
+//        RedisTemplate<byte[], byte[]> redisTemplate = new RedisTemplate<>();
+//        redisTemplate.setConnectionFactory(redisConnectionFactory());
+//        return redisTemplate;
 //    }
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate() {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory());
+
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new StringRedisSerializer());
+
+        return template;
+    }
 }

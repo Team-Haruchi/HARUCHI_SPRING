@@ -67,7 +67,6 @@ public class SecurityConfig {
                         configuration.setAllowedHeaders(Collections.singletonList("*"));
                         configuration.setMaxAge(3600L);
                         configuration.setExposedHeaders(Collections.singletonList("Authorization"));
-                        configuration.addExposedHeader("Authorization");
                         return configuration;
                     }
                 }))
@@ -85,6 +84,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((request) -> request
                         .requestMatchers("/member/signup/**").permitAll()
                         .requestMatchers("/member/login").permitAll()
+                        .requestMatchers("/member/refresh").permitAll()
                         .requestMatchers(AUTH_WHITELIST).permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
