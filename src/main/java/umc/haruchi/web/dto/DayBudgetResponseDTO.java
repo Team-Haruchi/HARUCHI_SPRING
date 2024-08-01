@@ -44,5 +44,4 @@ public class DayBudgetResponseDTO {
         LocalDate createdAt;
         Long expenditureId;
     }
-
 }

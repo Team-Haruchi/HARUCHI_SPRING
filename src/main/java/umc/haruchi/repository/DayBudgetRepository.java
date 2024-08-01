@@ -5,6 +5,8 @@ import org.springframework.security.authentication.jaas.JaasAuthenticationCallba
 import umc.haruchi.domain.DayBudget;
 import umc.haruchi.domain.MonthBudget;
 
+import java.util.Optional;
+
 public interface DayBudgetRepository extends JpaRepository<DayBudget, Long> {
-    DayBudget findByMonthBudgetAndDay(MonthBudget monthBudget, int day);
+    Optional<DayBudget> findByMonthBudgetAndDay(MonthBudget monthBudget, int day);
 }

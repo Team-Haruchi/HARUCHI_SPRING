@@ -20,6 +20,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static umc.haruchi.apiPayload.code.status.ErrorStatus.NOT_DAY_BUDGET;
+import static umc.haruchi.apiPayload.code.status.ErrorStatus.NOT_SOME_DAY_BUDGET;
+
 @Service
 @RequiredArgsConstructor
 public class DayBudgetService {
@@ -51,9 +54,10 @@ public class DayBudgetService {
             throw new MemberHandler(ErrorStatus.NO_MEMBER_EXIST);
         }
 
-        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month);
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month)
+                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.MONTH_BUDGET_NOT_FOUND));
         if(monthBudget == null){
-            throw new MonthBudgetHandler(ErrorStatus.NOT_MONTH_BUDGET);
+            throw new MonthBudgetHandler(ErrorStatus.MONTH_BUDGET_NOT_FOUND);
         }
         return monthBudget;
     }
@@ -61,10 +65,8 @@ public class DayBudgetService {
     public Integer findDayBudget(Long memberId) {
         MonthBudget monthBudget = check(memberId);
 
-        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day);
-        if(dayBudget == null){
-            throw new DayBudgetHandler(ErrorStatus.NOT_DAY_BUDGET);
-        }
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
+                .orElseThrow(() -> new DayBudgetHandler(ErrorStatus.NOT_DAY_BUDGET));
 
         return dayBudget.getDayBudget();
     }
@@ -74,10 +76,8 @@ public class DayBudgetService {
 
         List<Integer> allBudget = new ArrayList<>();
         for(int i=day; i<=lastDay; i++){
-            DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, i);
-            if(dayBudget == null){
-                throw new DayBudgetHandler(ErrorStatus.NOT_SOME_DAY_BUDGET);
-            }
+            DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, i)
+                    .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
             allBudget.add(dayBudget.getDayBudget());
         }
 
@@ -89,10 +89,8 @@ public class DayBudgetService {
     public void deleteIncome(Long memberId, Long incomeId) {
         MonthBudget monthBudget = check(memberId);
 
-        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day);
-        if(dayBudget == null){
-            throw new DayBudgetHandler(ErrorStatus.NOT_DAY_BUDGET);
-        }
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
+                .orElseThrow(() -> new DayBudgetHandler(ErrorStatus.NOT_DAY_BUDGET));
         if(dayBudget.getDayBudgetStatus() == DayBudgetStatus.INACTIVE){
             throw new DayBudgetHandler(ErrorStatus.TODAY_CLOSED);
         }
@@ -114,10 +112,8 @@ public class DayBudgetService {
 
         MonthBudget monthBudget = check(memberId);
 
-        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day);
-        if(dayBudget == null){
-            throw new DayBudgetHandler(ErrorStatus.NOT_DAY_BUDGET);
-        }
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
+                .orElseThrow(() -> new DayBudgetHandler(NOT_DAY_BUDGET));
 
         Income newIncome = DayBudgetConverter.toIncome(request, dayBudget);
 

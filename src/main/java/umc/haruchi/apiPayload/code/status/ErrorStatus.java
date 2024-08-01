@@ -26,8 +26,9 @@ public enum ErrorStatus implements BaseErrorCode {
     WITHDRAWAL_MEMBER(HttpStatus.NOT_FOUND, "MEMBER4007", "탈퇴한 회원입니다."),
 
     // MonthBudget 관련 에러
-    NOT_MONTH_BUDGET(HttpStatus.NOT_FOUND, "MONTHBUDGET4001", "한 달 예산이 존재하지 않습니다."),
-    EXCEED_USAGE(HttpStatus.BAD_REQUEST, "MONTHBUDGET4002", "사용가능한 한달 금액을 초과한 지출입니다."),
+    MONTH_BUDGET_NOT_FOUND(HttpStatus.NOT_FOUND, "MONTHBUDGET4001", "한 달 예산이 존재하지 않습니다."),
+    NOT_MONTH_BUDGET(HttpStatus.BAD_REQUEST, "MONTHBUDGET4002", "입력된 한 달 예산이 없거나 유효하지 않습니다."),
+    EXCEED_USAGE(HttpStatus.BAD_REQUEST, "MONTHBUDGET4003", "사용가능한 한달 금액을 초과한 지출입니다."),
 
     // DayBudget 관련 에러
     NOT_DAY_BUDGET(HttpStatus.NOT_FOUND, "DAYBUDGET4001", "하루 예산이 존재하지 않습니다."),

@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.apiPayload.exception.handler.BudgetRedistributionHandler;
 import umc.haruchi.apiPayload.exception.handler.DayBudgetHandler;
 import umc.haruchi.apiPayload.exception.handler.MemberHandler;
+import umc.haruchi.apiPayload.exception.handler.MonthBudgetHandler;
 import umc.haruchi.converter.BudgetRedistributionConverter;
 import umc.haruchi.domain.*;
 import umc.haruchi.domain.enums.DayBudgetStatus;
@@ -36,14 +37,16 @@ public class BudgetRedistributionService {
     public PushPlusClosing push(BudgetRedistributionRequestDTO.createPushDTO request, Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(NO_MEMBER_EXIST)); //영속화
-        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), year, month);
-        DayBudget sourceBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getSourceDay());
-
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), year, month)
+                .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
+        DayBudget sourceBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getSourceDay())
+                .orElseThrow(() -> new DayBudgetHandler(NOT_DAY_BUDGET));
         long totalAmount = request.getAmount();
         //target에 해당하는 daybudget 찾기
         DayBudget targetBudget = null;
         if (request.getTargetDay() != null) {
-            targetBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget,request.getTargetDay());
+            targetBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget,request.getTargetDay())
+                    .orElseThrow(() -> new DayBudgetHandler(NOT_DAY_BUDGET));
         }
 
         if (request.getAmount() > sourceBudget.getDayBudget() && request.getAmount() < 0) {
@@ -169,8 +172,11 @@ public class BudgetRedistributionService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(NO_MEMBER_EXIST)); //영속화
 
-        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), year, month);
-        DayBudget targetBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getTargetDay());
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), year, month)
+                .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
+
+        DayBudget targetBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getTargetDay())
+                .orElseThrow(() -> new DayBudgetHandler(NOT_DAY_BUDGET));
         long totalAmount = request.getAmount();
         int tossAmount = (int) (roundDownToNearestHundred(totalAmount)); //233원-> 200원
 
@@ -182,7 +188,8 @@ public class BudgetRedistributionService {
         //source에 해당하는 daybudget 찾기
         DayBudget sourceBudget = null;
         if (request.getSourceDay() != null) {
-            sourceBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getSourceDay());
+            sourceBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getSourceDay())
+                    .orElseThrow(() -> new DayBudgetHandler(NOT_DAY_BUDGET));
         }
 
         if (request.getAmount() < 0) {
