@@ -1,6 +1,7 @@
 package umc.haruchi.converter;
 
 import umc.haruchi.domain.DayBudget;
+import umc.haruchi.domain.Expenditure;
 import umc.haruchi.domain.Income;
 import umc.haruchi.web.dto.DayBudgetRequestDTO;
 import umc.haruchi.web.dto.DayBudgetResponseDTO;
@@ -34,6 +35,22 @@ public class DayBudgetConverter {
         return DayBudgetResponseDTO.incomeReg.builder()
                 .incomeId(income.getId())
                 .createdAt(LocalDate.now())
+                .build();
+    }
+
+
+    public static DayBudgetResponseDTO.expenditureReg toCreateExpenditure(Expenditure expenditure) {
+        return DayBudgetResponseDTO.expenditureReg.builder()
+                .expenditureId(expenditure.getId())
+                .createdAt(LocalDate.now())
+                .build();
+    }
+
+    public static Expenditure toExpenditure(DayBudgetRequestDTO.createExpenditureDTO request, DayBudget dayBudget) {
+        return Expenditure.builder()
+                .dayBudget(dayBudget)
+                .expenditureAmount(request.getExpenditureAmount())
+                .expenditureCategory(request.getCategory())
                 .build();
     }
 }
