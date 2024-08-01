@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.apiPayload.code.status.ErrorStatus;
 import umc.haruchi.apiPayload.exception.handler.JwtExceptionHandler;
 import umc.haruchi.apiPayload.exception.handler.MemberHandler;
-import umc.haruchi.apiPayload.exception.handler.MonthBudgetHandler;
 import umc.haruchi.config.login.jwt.JwtUtil;
 import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.converter.MonthBudgetConverter;
@@ -26,7 +25,6 @@ import umc.haruchi.repository.*;
 
 import umc.haruchi.web.dto.MemberRequestDTO;
 import umc.haruchi.web.dto.MemberResponseDTO;
-import umc.haruchi.web.dto.MonthBudgetRequestDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -60,6 +58,7 @@ public class MemberService {
         //회원가입 시 monthBudget 생성
         MonthBudget monthBudget = MonthBudgetConverter.toMonthBudget(request.getMonthBudget());
         monthBudget.setMember(newMember);
+        monthBudgetRepository.save(monthBudget);
 
         return memberRepository.save(newMember);
     }
