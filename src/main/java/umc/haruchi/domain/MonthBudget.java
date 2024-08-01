@@ -50,4 +50,10 @@ public class MonthBudget extends BaseEntity {
         this.month = now.getMonthValue();
     }
 
+    public void setMonthUse(long amount, int how) {
+        if(how == 0)
+            usedAmount += (int)amount;
+        else
+            usedAmount -= (int)amount;
+    }
 }

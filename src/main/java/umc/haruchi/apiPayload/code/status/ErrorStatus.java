@@ -27,6 +27,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // MonthBudget 관련 에러
     NOT_MONTH_BUDGET(HttpStatus.NOT_FOUND, "MONTHBUDGET4001", "한 달 예산이 존재하지 않습니다."),
+    EXCEED_USAGE(HttpStatus.BAD_REQUEST, "MONTHBUDGET4002", "사용가능한 한달 금액을 초과한 지출입니다."),
 
     // DayBudget 관련 에러
     NOT_DAY_BUDGET(HttpStatus.NOT_FOUND, "DAYBUDGET4001", "하루 예산이 존재하지 않습니다."),
@@ -43,6 +44,8 @@ public enum ErrorStatus implements BaseErrorCode {
     // Income 관련 에러
     INCOME_NOT_EXIST(HttpStatus.NOT_FOUND, "INCOME4001", "해당 수입이 존재하지 않습니다."),
 
+    // Expenditure 관련 에러
+    EXPENDITURE_NOT_EXIST(HttpStatus.NOT_FOUND, "EXPENDITURE4001", "해당 지출이 존재하지 않습니다."),
 
     // Token 관련 에러 - 수정...
     TOKEN_EMPTY(HttpStatus.UNAUTHORIZED, "MEMBER4020", "토큰이 비어있습니다."),
