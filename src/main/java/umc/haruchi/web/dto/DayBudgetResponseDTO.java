@@ -34,6 +34,14 @@ public class DayBudgetResponseDTO {
     public static class incomeReg{
         LocalDate createdAt;
         Long incomeId;
+    }
 
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class expenditureReg{
+        LocalDate createdAt;
+        Long expenditureId;
     }
 }

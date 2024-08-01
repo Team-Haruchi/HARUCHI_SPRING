@@ -25,14 +25,8 @@ public class PullMinusClosing extends BaseEntity {
     private boolean closingOption;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'DATE'")
+    @Column(columnDefinition = "VARCHAR(10) DEFAULT 'DATE'")
     private RedistributionOption redistributionOption;
-
-//    @Column(nullable = true)
-//    private LocalDate fromDate;
-//d
-//    @Column(nullable = false)
-//    private LocalDate toDate;
 
     @Column(nullable = false)
     @ColumnDefault("0")

@@ -84,6 +84,12 @@ public class DayBudget extends BaseEntity {
 
     public void setDayBudget(int distributedAmount) {
         dayBudget = distributedAmount;
+
+    public void setExpenditure(long amount, int how) {
+        if(how == 0)
+            dayBudget += (int)amount;
+        else
+            dayBudget -= (int)amount;
     }
 
     public void pushAmount(Integer distributedAmount) {
@@ -92,5 +98,9 @@ public class DayBudget extends BaseEntity {
 
     public void subAmount(Integer tossAmount) {
         dayBudget -= tossAmount;
+    }
+
+    public void changeDayBudgetStatus() {
+        dayBudgetStatus = DayBudgetStatus.INACTIVE;
     }
 }
