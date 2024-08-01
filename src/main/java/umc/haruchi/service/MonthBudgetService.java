@@ -84,12 +84,21 @@ public class MonthBudgetService {
 
         List<DayBudget> dayBudgets = new ArrayList<>();
 
-        //현재 일자의 전날까지는 status가 INACTIVE인 dayBudget을 생성하고
-        //현재 일자부터 말일까지는 status가 ACTIVE인 dayBudget 생성
-        for(long day = 1; day <= dayInMonth; day++) {
+        for(int day = 1; day <= dayInMonth; day++) {
+            final int currentDay = day;
+            //현재 일자의 전날까지는 status가 INACTIVE인 dayBudget을 생성하고
+            //현재 일자부터 말일까지는 status가 ACTIVE인 dayBudget 생성
             DayBudgetStatus status = (day < nowDay) ? DayBudgetStatus.INACTIVE : DayBudgetStatus.ACTIVE;
-            Integer nowDistributedAmount = (day < nowDay) ? 0 : distributedAmount;
-            DayBudget dayBudget = DayBudgetConverter.toDayBudget(nowDistributedAmount, day, status, monthBudget);
+            //현재 일자 전날까지는 0으로 설정, 현재 일자부터 말일까지는 distributedAmount로 설정
+            int nowDistributedAmount = (day < nowDay) ? 0 : distributedAmount;
+
+            //이미 생성된 dayBudget이 있으면 update, 아니면 create
+            DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, currentDay)
+                    .orElseGet(() -> DayBudgetConverter.toDayBudget(nowDistributedAmount, currentDay, status, monthBudget));
+
+            dayBudget.setStatus(status);
+            dayBudget.setDayBudget(nowDistributedAmount);
+
             dayBudgets.add(dayBudget);
         }
 

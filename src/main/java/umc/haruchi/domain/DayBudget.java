@@ -78,6 +78,14 @@ public class DayBudget extends BaseEntity {
             dayBudget += (int)amount;
     }
 
+    public void setStatus(DayBudgetStatus status) {
+        dayBudgetStatus = status;
+    }
+
+    public void setDayBudget(int distributedAmount) {
+        dayBudget = distributedAmount;
+    }
+
     public void pushAmount(Integer distributedAmount) {
         dayBudget += distributedAmount;
     }

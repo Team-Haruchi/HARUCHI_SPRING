@@ -13,10 +13,10 @@ import java.util.List;
 
 public class DayBudgetConverter {
 
-    public static DayBudget toDayBudget(Integer dayBudget, Long day, DayBudgetStatus status, MonthBudget monthBudget) {
+    public static DayBudget toDayBudget(Integer dayBudget, int day, DayBudgetStatus status, MonthBudget monthBudget) {
         return DayBudget.builder()
                 .dayBudget(dayBudget)
-                .day(day)
+                .day(Long.valueOf(day))
                 .dayBudgetStatus(status)
                 .monthBudget(monthBudget)
                 .build();
