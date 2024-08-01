@@ -50,32 +50,37 @@ public class BudgetRedistributionConverter {
                 .build();
     }
 
-    public static BudgetRedistributionResponseDTO.BudgetPushResultDTO ToBudgetPushResultDTO(PushPlusClosing pushPlusClosing) {
-        return BudgetRedistributionResponseDTO.BudgetPushResultDTO.builder()
+    public static BudgetRedistributionResponseDTO.budgetPushResultDTO ToBudgetPushResultDTO(PushPlusClosing pushPlusClosing) {
+        return BudgetRedistributionResponseDTO.budgetPushResultDTO.builder()
                 .pushId(pushPlusClosing.getId())
                 .createdAt(LocalDate.now())
                 .build();
     }
 
-    public static BudgetRedistributionResponseDTO.BudgetPullResultDTO ToBudgetPullResultDTO(PullMinusClosing pullMinusClosing) {
-        return BudgetRedistributionResponseDTO.BudgetPullResultDTO.builder()
+    public static BudgetRedistributionResponseDTO.budgetPullResultDTO ToBudgetPullResultDTO(PullMinusClosing pullMinusClosing) {
+        return BudgetRedistributionResponseDTO.budgetPullResultDTO.builder()
                 .pullId(pullMinusClosing.getId())
                 .createdAt(LocalDate.now())
                 .build();
     }
 
-    public static BudgetRedistributionResponseDTO.BudgetClosingResultDTO ToBudgetClosingResultDTO(PushPlusClosing pushPlusClosing) {
-        return BudgetRedistributionResponseDTO.BudgetClosingResultDTO.builder()
+    public static BudgetRedistributionResponseDTO.budgetClosingResultDTO ToBudgetClosingResultDTO(PushPlusClosing pushPlusClosing) {
+        return BudgetRedistributionResponseDTO.budgetClosingResultDTO.builder()
                 .closingId(pushPlusClosing.getId())
                 .createdAt(LocalDate.now())
                 .build();
     }
 
-    public static BudgetRedistributionResponseDTO.BudgetClosingResultDTO ToBudgetClosingResultDTO(PullMinusClosing pullMinusClosing) {
-        return BudgetRedistributionResponseDTO.BudgetClosingResultDTO.builder()
+    public static BudgetRedistributionResponseDTO.budgetClosingResultDTO ToBudgetClosingResultDTO(PullMinusClosing pullMinusClosing) {
+        return BudgetRedistributionResponseDTO.budgetClosingResultDTO.builder()
                 .closingId(pullMinusClosing.getId())
                 .createdAt(LocalDate.now())
                 .build();
     }
 
+    public static BudgetRedistributionResponseDTO.getCalculatedAmountResultDTO ToGetCalculatedAmountResultDTO(Long amount) {
+        return BudgetRedistributionResponseDTO.getCalculatedAmountResultDTO.builder()
+                .calculatedAmount(amount)
+                .build();
+    }
 }

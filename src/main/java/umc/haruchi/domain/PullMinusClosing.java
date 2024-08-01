@@ -28,12 +28,6 @@ public class PullMinusClosing extends BaseEntity {
     @Column(columnDefinition = "VARCHAR(10) DEFAULT 'DATE'")
     private RedistributionOption redistributionOption;
 
-//    @Column(nullable = true)
-//    private LocalDate fromDate;
-//d
-//    @Column(nullable = false)
-//    private LocalDate toDate;
-
     @Column(nullable = false)
     @ColumnDefault("0")
     private Long amount;

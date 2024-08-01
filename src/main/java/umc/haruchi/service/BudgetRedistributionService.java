@@ -458,4 +458,32 @@ public class BudgetRedistributionService {
         dayBudget.changeDayBudgetStatus(); //INACTIVE로 변경
         return pullMinusClosingRepository.save(pullMinusClosing);
     }
+
+    public Long calculatingAmount(int year, int month, int day, Long amount, Long memberId) {
+
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month);
+
+        //이번 달 남은 일 수 알아내기(본인 제외)
+        long dayCount = monthBudget.getDayBudgetList().stream()
+                .filter(budget -> budget.getDay() >= day).count() - 1;
+
+        //마지막 날이면 1/n 진행 x
+        if(dayCount == 0) {
+            throw new BudgetRedistributionHandler(FINAL_DAY);
+        }
+
+        long totalAmount = amount;
+
+        if(amount > 0) {
+            return totalAmount / dayCount;
+        }
+        else if(amount < 0) {
+            totalAmount = -1 * amount; //양수로 변경
+            return totalAmount / dayCount;
+        }
+        else {
+            //0이면 1/n 요청 들어올 수 x
+            throw new BudgetRedistributionHandler(ZERO_AMOUNT);
+        }
+    }
 }
