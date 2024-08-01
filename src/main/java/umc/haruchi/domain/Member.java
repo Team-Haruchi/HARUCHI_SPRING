@@ -65,7 +65,11 @@ public class Member extends BaseEntity {
     }
 
     public void addSafeBox(long safeBoxAmount) {
-        safeBox += safeBoxAmount;
+        if(safeBox == null) {
+            safeBox = safeBoxAmount;
+        }
+        else
+            safeBox += safeBoxAmount;
     }
 
     public void subSafeBox(long safeBoxAmount) {

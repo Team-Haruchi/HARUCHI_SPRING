@@ -31,6 +31,7 @@ public class MemberApiController {
     @Operation(summary = "회원가입 API", description = "이메일 인증으로 회원가입을 진행하는 API")
     public ApiResponse<MemberResponseDTO.MemberJoinResultDTO> join(@Valid @RequestBody MemberRequestDTO.MemberJoinDTO request) throws Exception {
         Member member = memberService.joinMember(request);
+        memberService.connectToDayBudget(member.getId());
         return ApiResponse.onSuccess(MemberConverter.toJoinResultDTO(member));
     }
 

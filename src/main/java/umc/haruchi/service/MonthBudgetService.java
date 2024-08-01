@@ -48,16 +48,21 @@ public class MonthBudgetService {
         monthBudget.updateMonthBudget(request.getMonthBudget());
 
         //하루 예산 재분배하여 저장
-        List<DayBudget> dayBudgets = distributeDayBudgets(memberId, monthBudget);
+        List<DayBudget> dayBudgets = distributeDayBudgets(memberId);
 
         dayBudgetRepository.saveAll(dayBudgets);
         return monthBudgetRepository.save(monthBudget);
     }
 
     @Transactional
-    public List<DayBudget> distributeDayBudgets(Long memberId, MonthBudget monthBudget) {
+    public List<DayBudget> distributeDayBudgets(Long memberId) {
+        LocalDate today = LocalDate.now();
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.NO_MEMBER_EXIST));
+
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, today.getYear(), today.getMonthValue())
+                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.MONTH_BUDGET_NOT_FOUND));
 
         //현재 날짜
         LocalDate now = LocalDate.now();
@@ -71,7 +76,8 @@ public class MonthBudgetService {
         int remainingDays = dayInMonth - nowDay + 1;
 
         //남은 한달 예산
-        long monthBudgetAmount = monthBudget.getMonthBudget() - monthBudget.getUsedAmount();
+        long usedAmount = monthBudget.getUsedAmount() != null ? monthBudget.getUsedAmount() : 0L;
+        long monthBudgetAmount = monthBudget.getMonthBudget() - usedAmount;
 
         //하루 예산
         long dayBudgetAmount = monthBudgetAmount / remainingDays;

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.apiPayload.code.status.ErrorStatus;
 import umc.haruchi.apiPayload.exception.handler.MemberHandler;
+import umc.haruchi.apiPayload.exception.handler.MonthBudgetHandler;
 import umc.haruchi.config.login.jwt.JwtUtil;
 import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.converter.MonthBudgetConverter;
@@ -19,9 +20,8 @@ import umc.haruchi.domain.Member;
 import umc.haruchi.domain.MemberToken;
 import umc.haruchi.domain.MonthBudget;
 import umc.haruchi.domain.Withdrawer;
-import umc.haruchi.repository.MemberRepository;
-import umc.haruchi.repository.MemberTokenRepository;
-import umc.haruchi.repository.WithdrawerRepository;
+import umc.haruchi.domain.DayBudget;
+import umc.haruchi.repository.*;
 import umc.haruchi.web.dto.MemberRequestDTO;
 import umc.haruchi.web.dto.MemberResponseDTO;
 import umc.haruchi.web.dto.MonthBudgetRequestDTO;
@@ -36,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final MonthBudgetRepository monthBudgetRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
     private final RedisTemplate redisTemplate;
@@ -45,6 +46,7 @@ public class MemberService {
     public static int code;
 
     private final MonthBudgetService monthBudgetService;
+    private final DayBudgetRepository dayBudgetRepository;
 
     // 회원가입
     @Transactional
@@ -68,6 +70,13 @@ public class MemberService {
         monthBudget.setMember(newMember);
 
         return memberRepository.save(newMember);
+    }
+
+    //dayBudget 생성
+    @Transactional
+    public void connectToDayBudget(Long memberId) {
+        List<DayBudget> dayBudgets = monthBudgetService.distributeDayBudgets(memberId);
+        dayBudgetRepository.saveAll(dayBudgets);
     }
 
     // 비밀번호 확인
@@ -181,6 +190,7 @@ public class MemberService {
                 .build();
         withdrawerRepository.save(withdrawer);
     }
+
 
     // 혹시 몰라 남겨둠
 //    public MemberResponseDTO.LoginJwtTokenDTO login(MemberRequestDTO.MemberLoginDTO request) {
