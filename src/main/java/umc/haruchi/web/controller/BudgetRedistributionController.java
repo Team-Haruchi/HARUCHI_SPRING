@@ -52,7 +52,7 @@ public class BudgetRedistributionController {
         }
     }
 
-    @Operation(summary = "지출 마감에서 1/n경우의 하루 차감/분배 값 조회 API", description = "지출 마감 영수증에서 고르게 분배하기 선택 시 얼마씩 분배/차감할 지 알려주는 API입니다. +, - 값을 넘겨주세요. 0일때는 x")
+    @Operation(summary = "지출 마감에서 1/n경우의 하루 차감/분배 값 조회 API", description = "지출 마감 영수증에서 고르게 분배하기 선택 시 얼마씩 분배/차감할 지 알려주는 API입니다. +, - 값을 넘겨주세요.")
     @GetMapping("/closing/amount")
     public ApiResponse<BudgetRedistributionResponseDTO.getCalculatedAmountResultDTO> getCalculatedAmount(@RequestParam @NotNull(message = "year 값은 필수 입력 값입니다.") int year,
                                                                                                          @RequestParam @NotNull(message = "month 값은 필수 입력 값입니다.") int month,
