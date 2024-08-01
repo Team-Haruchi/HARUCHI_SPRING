@@ -11,14 +11,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.apiPayload.code.status.ErrorStatus;
+import umc.haruchi.apiPayload.exception.handler.JwtExceptionHandler;
 import umc.haruchi.apiPayload.exception.handler.MemberHandler;
 import umc.haruchi.config.login.jwt.JwtUtil;
 import umc.haruchi.converter.MemberConverter;
 import umc.haruchi.domain.Member;
-import umc.haruchi.domain.MemberToken;
 import umc.haruchi.domain.Withdrawer;
 import umc.haruchi.repository.MemberRepository;
-import umc.haruchi.repository.MemberTokenRepository;
 import umc.haruchi.repository.WithdrawerRepository;
 import umc.haruchi.web.dto.MemberRequestDTO;
 import umc.haruchi.web.dto.MemberResponseDTO;
@@ -35,24 +34,14 @@ public class MemberService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
     private final RedisTemplate redisTemplate;
-    private final MemberTokenRepository memberTokenRepository;
     private final WithdrawerRepository withdrawerRepository;
+    private final JwtUtil jwtUtil;
 
     public static int code;
 
     // 회원가입
     @Transactional
     public Member joinMember(MemberRequestDTO.MemberJoinDTO request) throws Exception {
-
-        // 이용약관은 무조건 체크돼야 들어오므로 스킵함
-
-        // 이메일 인증 요청에서 미리 처리하니까 삭제해도 됨
-        checkDuplicatedEmail(request.getEmail());
-
-        // 이메일 인증 여부 확인 - 프론트에서 해결해준다면 삭제해도 됨
-        if (!request.isVerifiedEmail()) {
-            throw new MemberHandler(ErrorStatus.NOT_VERIFIED_EMAIL);
-        }
 
         Member newMember = MemberConverter.toMember(request);
         newMember.encodePassword(passwordEncoder.encode(request.getPassword()));
@@ -135,8 +124,6 @@ public class MemberService {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
 
-        member.setMemberStatusLogin();
-
         if (!passwordEncoder.matches(loginDto.getPassword(), member.getPassword())) {
             throw new MemberHandler(ErrorStatus.PASSWORD_NOT_MATCH);
         }
@@ -144,15 +131,11 @@ public class MemberService {
         // 30일 이상 미접속 시 로그아웃 되도록 토큰 유효시간을 수정
         String accessToken = JwtUtil.createAccessJwt(member.getId(), member.getEmail(), null);
         String refreshToken = JwtUtil.createRefreshJwt(member.getId(), member.getEmail(), null);
-        MemberToken token = MemberToken.builder()
-                .member(member)
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
-        memberTokenRepository.save(token);
 
         Long accessExpiredAt = JwtUtil.getExpiration(accessToken);
         Long refreshExpiredAt = JwtUtil.getExpiration(refreshToken);
+
+        redisTemplate.opsForValue().set("RT" +  email, refreshToken, refreshExpiredAt, TimeUnit.MILLISECONDS);
 
         return MemberResponseDTO.LoginJwtTokenDTO.builder()
                 .grantType("Bearer")
@@ -161,6 +144,65 @@ public class MemberService {
                 .accessTokenExpiresAt(accessExpiredAt)
                 .refreshTokenExpirationAt(refreshExpiredAt)
                 .build();
+    }
+
+    // 토큰 재발급
+    public MemberResponseDTO.LoginJwtTokenDTO reissue(String refreshToken) {
+
+        if (!jwtUtil.validateToken(refreshToken)) {
+            throw new JwtExceptionHandler(ErrorStatus.NOT_VALID_TOKEN.getMessage());
+        }
+
+        String email = jwtUtil.getEmail(refreshToken);
+
+        Object o = redisTemplate.opsForValue().get("RT" + email);
+        if (o == null) {
+            throw new JwtExceptionHandler(ErrorStatus.NO_MATCH_REFRESHTOKEN.getMessage());
+        }
+
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
+
+        String newAccessToken = JwtUtil.createAccessJwt(member.getId(), member.getEmail(), null);
+        String newRefreshToken = JwtUtil.createRefreshJwt(member.getId(), member.getEmail(), null);
+
+        Long accessExpiredAt = JwtUtil.getExpiration(newAccessToken);
+        Long refreshExpiredAt = JwtUtil.getExpiration(newRefreshToken);
+
+        redisTemplate.opsForValue().set("RT" + member.getEmail(), newRefreshToken, refreshExpiredAt, TimeUnit.MILLISECONDS);
+
+        return MemberResponseDTO.LoginJwtTokenDTO.builder()
+                .grantType("Bearer")
+                .accessToken(newAccessToken)
+                .accessTokenExpiresAt(accessExpiredAt)
+                .refreshToken(newRefreshToken)
+                .refreshTokenExpirationAt(refreshExpiredAt)
+                .build();
+    }
+
+    // 로그아웃 (액세스 토큰 블랙리스트에 저장)
+    public void logout(String accessToken, String refreshToken, String type) {
+
+        try {
+            jwtUtil.validateToken(accessToken);
+        } catch (JwtExceptionHandler e) {
+            throw new JwtExceptionHandler(ErrorStatus.NOT_VALID_TOKEN.getMessage());
+        }
+
+        String email = jwtUtil.getEmail(accessToken);
+
+        if (redisTemplate.opsForValue().get("RT" + email) != null) {
+            redisTemplate.delete("RT" + email);
+        }
+
+        Long expiration = JwtUtil.getExpiration(accessToken);
+        redisTemplate.opsForValue().set(accessToken, "logout", expiration, TimeUnit.MILLISECONDS);
+
+        if (type.equals("DELETE")) {
+            Member member = memberRepository.findByEmail(email)
+                    .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
+            memberRepository.delete(member);
+        }
     }
 
     // 회원 즉시 탈퇴 - 이유 저장
@@ -178,13 +220,6 @@ public class MemberService {
         return MemberResponseDTO.MemberDetailResultDTO.builder()
                 .name(member.getName())
                 .email(member.getEmail())
-                .createdAt(member.getCreatedAt()).build();
-    }
-
-    // 회원의 세이프박스 금액 조회
-    public Long getMemberSafeBox(String email) {
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
-        return member.getSafeBox();
+                .createdAt(member.getCreatedAt().toLocalDate()).build();
     }
 }

@@ -57,6 +57,7 @@ public enum ErrorStatus implements BaseErrorCode {
     EMPTY_CLAIMS_TOKEN(HttpStatus.UNAUTHORIZED, "MEMBER4025", "JWT Claims 문자열이 비어있습니다."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "MEMBER4026", "올바르지 않은 JWT 토큰입니다."),
     JWT_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4027", "유효한 JWT 토큰이 없습니다."),
+    NO_MATCH_REFRESHTOKEN(HttpStatus.BAD_REQUEST, "MEMBER4028", "일치하는 리프레시 토큰이 존재하지 않습니다."),
     ;
     //플젝 진행하며 추가하기..
 

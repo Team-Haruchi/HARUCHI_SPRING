@@ -12,7 +12,6 @@ public class MemberConverter {
 
     public static Member toMember(MemberRequestDTO.MemberJoinDTO request) {
         return Member.builder()
-                .monthBudget(request.getMonthBudget())
                 .name(request.getName())
                 .email(request.getEmail())
                 .build();
