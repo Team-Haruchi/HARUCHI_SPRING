@@ -84,6 +84,7 @@ public class DayBudget extends BaseEntity {
 
     public void setDayBudget(int distributedAmount) {
         dayBudget = distributedAmount;
+    }
 
     public void setExpenditure(long amount, int how) {
         if(how == 0)

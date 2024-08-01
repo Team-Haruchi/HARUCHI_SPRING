@@ -62,6 +62,7 @@ public class MonthBudget extends BaseEntity {
         this.year = now.getYear();
         this.month = now.getMonthValue();
         this.monthBudget = monthBudget;
+    }
 
     public void setMonthUse(long amount, int how) {
         if(how == 0)
