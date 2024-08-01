@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.apiPayload.exception.handler.BudgetRedistributionHandler;
+import umc.haruchi.apiPayload.exception.handler.DayBudgetHandler;
 import umc.haruchi.apiPayload.exception.handler.MemberHandler;
 import umc.haruchi.converter.BudgetRedistributionConverter;
 import umc.haruchi.domain.*;
+import umc.haruchi.domain.enums.DayBudgetStatus;
 import umc.haruchi.repository.*;
 import umc.haruchi.web.dto.BudgetRedistributionRequestDTO;
 import java.time.LocalDate;
@@ -305,6 +307,11 @@ public class BudgetRedistributionService {
         MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), request.getYear(), request.getMonth());
         DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getDay());
 
+        //이미 마감된 날 에러처리
+        if(dayBudget.getDayBudgetStatus().equals(DayBudgetStatus.INACTIVE)) {
+            throw new DayBudgetHandler(TODAY_CLOSED);
+        }
+
         //이번 달 남은 일 수 알아내기(본인 제외)
         long dayCount = monthBudget.getDayBudgetList().stream()
                 .filter(budget -> budget.getDay() >= request.getDay()).count() - 1;
@@ -383,6 +390,10 @@ public class BudgetRedistributionService {
         MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), request.getYear(), request.getMonth());
         DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getDay());
 
+        //이미 마감된 날 에러처리
+        if(dayBudget.getDayBudgetStatus().equals(DayBudgetStatus.INACTIVE)) {
+            throw new DayBudgetHandler(TODAY_CLOSED);
+        }
         //이번 달 남은 일 수 알아내기(본인 제외)
         long dayCount = monthBudget.getDayBudgetList().stream()
                 .filter(budget -> budget.getDay() >= request.getDay()).count() - 1;
