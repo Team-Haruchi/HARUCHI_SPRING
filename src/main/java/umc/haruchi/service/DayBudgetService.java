@@ -20,8 +20,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static umc.haruchi.apiPayload.code.status.ErrorStatus.NOT_DAY_BUDGET;
-import static umc.haruchi.apiPayload.code.status.ErrorStatus.NOT_SOME_DAY_BUDGET;
+import static umc.haruchi.apiPayload.code.status.ErrorStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -128,7 +127,9 @@ public class DayBudgetService {
     public Expenditure joinExpenditure(DayBudgetRequestDTO.createExpenditureDTO request, Long memberId) {
         MonthBudget monthBudget = check(memberId);
 
-        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day).orElse(null);
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
+                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
+
         if(dayBudget == null){
             throw new DayBudgetHandler(ErrorStatus.NOT_DAY_BUDGET);
         }
@@ -154,7 +155,9 @@ public class DayBudgetService {
     public void deleteExpenditure(Long memberId, Long expenditureId) {
         MonthBudget monthBudget = check(memberId);
 
-        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day).orElse(null);
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
+                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
+
         if(dayBudget == null){
             throw new DayBudgetHandler(ErrorStatus.NOT_DAY_BUDGET);
         }

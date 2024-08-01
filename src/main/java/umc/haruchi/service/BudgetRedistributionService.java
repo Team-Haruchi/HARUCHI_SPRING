@@ -311,8 +311,10 @@ public class BudgetRedistributionService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(NO_MEMBER_EXIST)); //영속화
 
-        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), request.getYear(), request.getMonth()).orElse(null);
-        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getDay()).orElse(null);
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), request.getYear(), request.getMonth())
+                .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getDay())
+                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
 
         //이미 마감된 날 에러처리
         if(dayBudget.getDayBudgetStatus().equals(DayBudgetStatus.INACTIVE)) {
@@ -394,9 +396,10 @@ public class BudgetRedistributionService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(NO_MEMBER_EXIST)); //영속화
 
-        //orElse(null)을 붙여 수정함 -> null일 때 throw 처리 해야 할 수도?
-        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), request.getYear(), request.getMonth()).orElse(null);
-        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getDay()).orElse(null);
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), request.getYear(), request.getMonth())
+                .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getDay())
+                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
 
         //이미 마감된 날 에러처리
         if(dayBudget.getDayBudgetStatus().equals(DayBudgetStatus.INACTIVE)) {
@@ -480,7 +483,8 @@ public class BudgetRedistributionService {
 
     public Long calculatingAmount(int year, int month, int day, Long amount, Long memberId) {
 
-        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month).orElse(null);
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month)
+                .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
 
         //이번 달 남은 일 수 알아내기(본인 제외)
         long dayCount = monthBudget.getDayBudgetList().stream()
