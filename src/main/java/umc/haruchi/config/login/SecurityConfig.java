@@ -85,6 +85,7 @@ public class SecurityConfig {
                         .requestMatchers("/member/signup/**").permitAll()
                         .requestMatchers("/member/login").permitAll()
                         .requestMatchers("/member/refresh").permitAll()
+                        .requestMatchers("/health").permitAll()  // health check
                         .requestMatchers(AUTH_WHITELIST).permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
