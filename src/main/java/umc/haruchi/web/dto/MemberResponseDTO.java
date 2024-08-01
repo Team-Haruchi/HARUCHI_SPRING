@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class MemberResponseDTO {
@@ -23,11 +24,20 @@ public class MemberResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class LoginJwtTokenDTO {
-        private String grantType;
-        private String accessToken;
-        private Long accessTokenExpiresAt;
-        private String refreshToken;
-        private Long refreshTokenExpirationAt;
+        String grantType;
+        String accessToken;
+        Long accessTokenExpiresAt;
+        String refreshToken;
+        Long refreshTokenExpirationAt;
     }
 
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MemberDetailResultDTO {
+        LocalDate createdAt;
+        String email;
+        String name;
+    }
 }
