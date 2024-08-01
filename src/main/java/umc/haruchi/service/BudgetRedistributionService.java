@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.apiPayload.exception.handler.BudgetRedistributionHandler;
-import umc.haruchi.apiPayload.exception.handler.DayBudgetHandler;
 import umc.haruchi.apiPayload.exception.handler.MemberHandler;
 import umc.haruchi.converter.BudgetRedistributionConverter;
 import umc.haruchi.domain.*;
@@ -14,8 +13,7 @@ import umc.haruchi.web.dto.BudgetRedistributionRequestDTO;
 import java.time.LocalDate;
 
 import static umc.haruchi.apiPayload.code.status.ErrorStatus.*;
-import static umc.haruchi.domain.enums.RedistributionOption.DATE;
-import static umc.haruchi.domain.enums.RedistributionOption.EVENLY;
+import static umc.haruchi.domain.enums.RedistributionOption.*;
 
 @Service
 @Transactional(readOnly = true)
@@ -53,11 +51,14 @@ public class BudgetRedistributionService {
             throw new BudgetRedistributionHandler(INVALID_AMOUNT_RANGE);
         }
 
-        //고르게 넘기기
+        //고르게 넘기기(233원씩 넘겨준다고하면 200원씩 분배하고 33원씩 * 일수 -> 세이프박스, 금액 차감된 source도 다시 확인 후 절사)
         if (request.getRedistributionOption().equals(EVENLY)) {
 
             if (targetBudget != null) {
                 throw new BudgetRedistributionHandler(TARGET_MUST_NULL);
+            }
+            if (sourceBudget.getDayBudget() < totalAmount){
+                throw new BudgetRedistributionHandler(LACK_OF_MONEY);
             }
             //source 날짜 찾기
             long sourceDay = sourceBudget.getDay();
@@ -88,10 +89,13 @@ public class BudgetRedistributionService {
             member.addSafeBox(safeBoxAmount);
 
         } else if (request.getRedistributionOption().equals(DATE)) {
-            // 특정 날짜로 넘기기
+            // 특정 날짜로 넘기기(233원을 넘겨준다고하면 200원만 넘기고 33원 -> 세이프박스, source도 다시 확인 후 절사(67원) = 100원)
 
             if (targetBudget == null) {
                 throw new BudgetRedistributionHandler(TARGET_IS_NULL);
+            }
+            if (sourceBudget.getDayBudget() < totalAmount){
+                throw new BudgetRedistributionHandler(LACK_OF_MONEY);
             }
             // 10의 자리 이하 절사
             int tossAmount = (int) ((roundDownToNearestHundred(totalAmount))); // 넘겨줄 값
@@ -107,10 +111,13 @@ public class BudgetRedistributionService {
             // 세이프박스에 절사한 값 저장
             member.addSafeBox(safeBoxAmount);
 
-        } else {
-            // 세이프 박스에 넘기기
+        } else if (request.getRedistributionOption().equals(SAFEBOX)) {
+            // 세이프 박스에 넘기기(233원을 넘겨준다고하면 233그대로 넘김, source도 다시 확인 후 절사(67원 세이프박스로))
             if (targetBudget != null) {
                 throw new BudgetRedistributionHandler(TARGET_MUST_NULL);
+            }
+            if (sourceBudget.getDayBudget() < totalAmount){
+                throw new BudgetRedistributionHandler(LACK_OF_MONEY);
             }
             // source amount에서 뺴기
             sourceBudget.subAmount((int) totalAmount);
@@ -118,10 +125,13 @@ public class BudgetRedistributionService {
             member.addSafeBox(totalAmount + sourceBudget.getDayBudget() % 100);
             //source도 다시 한번 확인해서 절사
             sourceBudget.subAmount((int) (sourceBudget.getDayBudget() % 100));
+
+        } else {
+            throw new BudgetRedistributionHandler(NO_REDISTRIBUTION_OPTION);
         }
 
         PushPlusClosing pushPlusClosing = BudgetRedistributionConverter.toPushPlusClosing(request, sourceBudget, targetBudget);
-        return pushPlusClosingRepository.save(pushPlusClosing); //나중에 공통으로 뺴기
+        return pushPlusClosingRepository.save(pushPlusClosing);
     }
 
     //당겨쓰기
@@ -134,7 +144,7 @@ public class BudgetRedistributionService {
         MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), year, month);
         DayBudget targetBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getTargetDay());
         long totalAmount = request.getAmount();
-        int tossAmount = (int) (roundDownToNearestHundred(totalAmount));
+        int tossAmount = (int) (roundDownToNearestHundred(totalAmount)); //233원-> 200원
 
         //source에 해당하는 daybudget 찾기
         DayBudget sourceBudget = null;
@@ -146,7 +156,7 @@ public class BudgetRedistributionService {
             throw new BudgetRedistributionHandler(INVALID_AMOUNT_RANGE);
         }
 
-        //고르게 당겨쓰기
+        //고르게 당겨쓰기(233원씩 당겨온다고하면 200 * 일수 당겨와서 target에 저장, 233원씩 차감, 67원씩 세이프박스로))
         if (request.getRedistributionOption().equals(EVENLY)) {
             if (sourceBudget != null) {
                 throw new BudgetRedistributionHandler(SOURCE_MUST_NULL);
@@ -171,6 +181,9 @@ public class BudgetRedistributionService {
             monthBudget.getDayBudgetList().stream()
                     .filter(dayBudget -> dayBudget.getDay() >= day && !dayBudget.getDay().equals(targetDay))
                     .forEach(dayBudget -> {
+                        if(dayBudget.getDayBudget() < splitAmount) {
+                            throw new BudgetRedistributionHandler(LACK_OF_MONEY);
+                        }
                         dayBudget.subAmount((int) splitAmount); //467,567 다양하게 있을 수 있음
                     });
 
@@ -189,10 +202,13 @@ public class BudgetRedistributionService {
             member.addSafeBox(safeBoxAmount);
 
         } else if (request.getRedistributionOption().equals(DATE)) {
-            // 특정 날 당겨쓰기
+            // 특정 날 당겨쓰기(233원 당겨온다고하면 200원을 당겨와서 target에 저장, 33원은 세이프박스, source에 67원도 절사해서 세이프박스 = 100))
 
             if (sourceBudget == null) {
                 throw new BudgetRedistributionHandler(SOURCE_IS_NULL);
+            }
+            if (sourceBudget.getDayBudget() < totalAmount){
+                throw new BudgetRedistributionHandler(LACK_OF_MONEY);
             }
 
             // source amount에서 뺴기
@@ -206,24 +222,26 @@ public class BudgetRedistributionService {
             // 세이프박스에 절사한 값 저장
             member.addSafeBox(safeBoxAmount);
 
-        } else {
-            // 세이프 박스에서 당겨쓰기
+        } else if (request.getRedistributionOption().equals(SAFEBOX)) {
+            // 세이프 박스에서 당겨쓰기(233원 당겨온다고하면 200원만 당겨와서 target에 저장, 세이프박스에서 200원 차감)
             if (sourceBudget != null) {
                 throw new BudgetRedistributionHandler(SOURCE_MUST_NULL);
             }
-
+            if (member.getSafeBox() < tossAmount){
+                throw new BudgetRedistributionHandler(LACK_OF_MONEY);
+            }
             // 세이프박스에서 빼기
-            member.subSafeBox(totalAmount);
+            member.subSafeBox(tossAmount);
 
             // target에 더하기
             targetBudget.pushAmount(tossAmount);
 
-            member.addSafeBox(sourceBudget.getDayBudget() % 100);
-            sourceBudget.subAmount((int) (sourceBudget.getDayBudget() % 100));
+        } else {
+            throw new BudgetRedistributionHandler(NO_REDISTRIBUTION_OPTION);
         }
 
         PullMinusClosing pullMinusClosing = BudgetRedistributionConverter.toPullMinusClosing(request, sourceBudget, targetBudget);
-        return pullMinusClosingRepository.save(pullMinusClosing); //나중에 공통으로 뺴기
+        return pullMinusClosingRepository.save(pullMinusClosing);
     }
 
     // 10의 자리 절사

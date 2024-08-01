@@ -40,7 +40,8 @@ public enum ErrorStatus implements BaseErrorCode {
     SOURCE_MUST_NULL(HttpStatus.BAD_REQUEST, "REDISTRIBUTION4003", "소스 날짜는 NULL 이어야 합니다."),
     SOURCE_IS_NULL(HttpStatus.BAD_REQUEST, "REDISTRIBUTION4004", "소스 날짜가 존재하지 않습니다."),
     INVALID_AMOUNT_RANGE(HttpStatus.BAD_REQUEST, "REDISTRIBUTION4005", "입력된 금액이 해당 예산 범위를 초과하거나 유효하지 않습니다."),
-
+    NO_REDISTRIBUTION_OPTION(HttpStatus.BAD_REQUEST, "REDISTRIBUTION4006", "해당하는 재분배 옵션이 존재하지 않습니다."),
+    LACK_OF_MONEY(HttpStatus.BAD_REQUEST, "REDISTRIBUTION4007", "돈이 부족합니다."),
     // Income 관련 에러
     INCOME_NOT_EXIST(HttpStatus.NOT_FOUND, "INCOME4001", "해당 수입이 존재하지 않습니다."),
 
@@ -56,6 +57,7 @@ public enum ErrorStatus implements BaseErrorCode {
     EMPTY_CLAIMS_TOKEN(HttpStatus.UNAUTHORIZED, "MEMBER4025", "JWT Claims 문자열이 비어있습니다."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "MEMBER4026", "올바르지 않은 JWT 토큰입니다."),
     JWT_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4027", "유효한 JWT 토큰이 없습니다."),
+    NO_MATCH_REFRESHTOKEN(HttpStatus.BAD_REQUEST, "MEMBER4028", "일치하는 리프레시 토큰이 존재하지 않습니다."),
     ;
     //플젝 진행하며 추가하기..
 
