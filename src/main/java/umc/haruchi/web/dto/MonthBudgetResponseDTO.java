@@ -26,4 +26,14 @@ public class MonthBudgetResponseDTO {
         Long id;
         LocalDateTime updatedAt;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetMonthResultDTO {
+        Long monthBudget;
+        Long usedAmount;
+        LocalDateTime createdAt;
+    }
 }

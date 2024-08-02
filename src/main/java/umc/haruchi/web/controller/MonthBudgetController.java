@@ -28,4 +28,12 @@ public class MonthBudgetController {
         MonthBudget monthBudget = monthBudgetService.updateMonthBudget(memberDetail.getMember().getId(), request);
         return ApiResponse.onSuccess(MonthBudgetConverter.toUpdateMonthResultDTO(monthBudget));
     }
+
+    //한달 예산 금액 조회
+    @Operation(summary = "한달 예산 금액 조회 API", description = "본인의 한달 예산 금액을 조회하는 API 입니다.")
+    @GetMapping("/")
+    public ApiResponse<MonthBudgetResponseDTO.GetMonthResultDTO> getMonthBudget(@AuthenticationPrincipal MemberDetail memberDetail) {
+        MonthBudget monthBudget = monthBudgetService.getMonthBudget(memberDetail.getMember().getId());
+        return ApiResponse.onSuccess(MonthBudgetConverter.toGetMonthResultDTO(monthBudget));
+    }
 }

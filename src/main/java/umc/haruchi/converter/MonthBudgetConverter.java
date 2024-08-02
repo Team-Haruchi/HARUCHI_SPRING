@@ -25,4 +25,12 @@ public class MonthBudgetConverter {
                 .monthBudget(monthBudget)
                 .build();
     }
+
+    public static MonthBudgetResponseDTO.GetMonthResultDTO toGetMonthResultDTO(MonthBudget monthBudget) {
+        return MonthBudgetResponseDTO.GetMonthResultDTO.builder()
+                .monthBudget(monthBudget.getMonthBudget())
+                .usedAmount(monthBudget.getUsedAmount())
+                .createdAt(monthBudget.getCreatedAt())
+                .build();
+    }
 }

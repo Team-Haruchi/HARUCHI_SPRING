@@ -114,6 +114,21 @@ public class MonthBudgetService {
         return dayBudgets;
     }
 
+    @Transactional
+    public MonthBudget getMonthBudget(Long memberId) {
+        LocalDate today = LocalDate.now();
+
+        //member가 존재하는 지 확인
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.NO_MEMBER_EXIST));
+
+        //member와 year, month 기반으로 해당하는 monthBudget 찾기
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, today.getYear(), today.getMonthValue())
+                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.MONTH_BUDGET_NOT_FOUND));
+
+        return monthBudget;
+    }
+
     private long roundDownToNearestHundred(long amount) {
         return (amount / 100) * 100;
     }
