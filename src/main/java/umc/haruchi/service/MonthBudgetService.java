@@ -114,7 +114,6 @@ public class MonthBudgetService {
         return dayBudgets;
     }
 
-    @Transactional
     public MonthBudget getMonthBudget(Long memberId) {
         LocalDate today = LocalDate.now();
 
