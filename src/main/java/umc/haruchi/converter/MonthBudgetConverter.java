@@ -1,7 +1,6 @@
 package umc.haruchi.converter;
 
 import umc.haruchi.domain.MonthBudget;
-import umc.haruchi.web.dto.BudgetRedistributionResponseDTO;
 import umc.haruchi.web.dto.MonthBudgetRequestDTO;
 import umc.haruchi.web.dto.MonthBudgetResponseDTO;
 
