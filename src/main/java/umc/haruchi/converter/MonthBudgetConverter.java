@@ -33,4 +33,10 @@ public class MonthBudgetConverter {
                 .createdAt(monthBudget.getCreatedAt())
                 .build();
     }
+
+    public static MonthBudgetResponseDTO.GetMonthUsedPercentResultDTO toGetMonthUsedPercentResultDTO(double percent) {
+        return MonthBudgetResponseDTO.GetMonthUsedPercentResultDTO.builder()
+                .monthUsedPercent(percent)
+                .build();
+    }
 }

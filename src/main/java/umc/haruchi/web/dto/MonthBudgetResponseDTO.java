@@ -36,4 +36,12 @@ public class MonthBudgetResponseDTO {
         Long usedAmount;
         LocalDateTime createdAt;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetMonthUsedPercentResultDTO {
+        double monthUsedPercent;
+    }
 }
