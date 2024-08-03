@@ -19,11 +19,14 @@ import umc.haruchi.web.dto.DayBudgetRequestDTO;
 import umc.haruchi.web.dto.MonthBudgetRequestDTO;
 import umc.haruchi.web.dto.MonthBudgetResponseDTO;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static umc.haruchi.apiPayload.code.status.ErrorStatus.NOT_SOME_DAY_BUDGET;
 
 @Service
 @RequiredArgsConstructor
@@ -145,6 +148,36 @@ public class MonthBudgetService {
         //소수점 6번째자리에서 반올림해서 리턴
         return Math.round(monthUsedAmountPercent*1000000)/1000000.0;
     }
+
+    public Integer getWeekBudget(Long memberId) {
+        LocalDate today = LocalDate.now();
+
+        //member가 존재하는 지 확인
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.NO_MEMBER_EXIST));
+
+        //member와 year, month 기반으로 해당하는 monthBudget 찾기
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, today.getYear(), today.getMonthValue())
+                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.MONTH_BUDGET_NOT_FOUND));
+
+        //이번 주 일요일까지 남은 일수 계산
+        int remainDays =  DayOfWeek.SUNDAY.getValue() - today.getDayOfWeek().getValue();
+
+        //남은 일수의 dayBudget 구하기
+        List<Integer> dayBudgets = new ArrayList<>();
+
+        for(int i=0; i<= remainDays; i++){
+            DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, today.getDayOfMonth()+i)
+                    .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
+            dayBudgets.add(dayBudget.getDayBudget());
+        }
+
+        //남은 일수의 dayBudget 합 리턴
+        return dayBudgets.stream()
+                .mapToInt(Integer::intValue)
+                .sum();
+    }
+
     private long roundDownToNearestHundred(long amount) {
         return (amount / 100) * 100;
     }

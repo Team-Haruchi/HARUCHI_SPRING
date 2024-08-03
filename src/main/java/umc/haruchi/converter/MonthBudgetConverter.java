@@ -39,4 +39,10 @@ public class MonthBudgetConverter {
                 .monthUsedPercent(percent)
                 .build();
     }
+
+    public static MonthBudgetResponseDTO.GetWeekBudgetResultDTO toGetWeekBudgetResultDTO(Integer budget) {
+        return MonthBudgetResponseDTO.GetWeekBudgetResultDTO.builder()
+                .weekBudget(budget)
+                .build();
+    }
 }

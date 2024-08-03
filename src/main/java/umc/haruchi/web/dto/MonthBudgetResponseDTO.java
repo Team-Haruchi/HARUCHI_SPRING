@@ -44,4 +44,12 @@ public class MonthBudgetResponseDTO {
     public static class GetMonthUsedPercentResultDTO {
         double monthUsedPercent;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetWeekBudgetResultDTO {
+        Integer weekBudget;
+    }
 }
