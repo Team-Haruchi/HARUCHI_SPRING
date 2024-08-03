@@ -1,6 +1,7 @@
 package umc.haruchi.converter;
 
 import umc.haruchi.domain.MonthBudget;
+import umc.haruchi.web.dto.BudgetRedistributionResponseDTO;
 import umc.haruchi.web.dto.MonthBudgetRequestDTO;
 import umc.haruchi.web.dto.MonthBudgetResponseDTO;
 
@@ -31,6 +32,12 @@ public class MonthBudgetConverter {
                 .monthBudget(monthBudget.getMonthBudget())
                 .usedAmount(monthBudget.getUsedAmount())
                 .createdAt(monthBudget.getCreatedAt())
+                .build();
+    }
+
+    public static MonthBudgetResponseDTO.GetMonthUsedPercentResultDTO toGetMonthUsedPercentResultDTO(double percent) {
+        return MonthBudgetResponseDTO.GetMonthUsedPercentResultDTO.builder()
+                .monthUsedPercent(percent)
                 .build();
     }
 }

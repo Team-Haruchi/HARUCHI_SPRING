@@ -128,6 +128,23 @@ public class MonthBudgetService {
         return monthBudget;
     }
 
+    public double getMonthUsedPercent(Long memberId) {
+        LocalDate today = LocalDate.now();
+
+        //member가 존재하는 지 확인
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.NO_MEMBER_EXIST));
+
+        //member와 year, month 기반으로 해당하는 monthBudget 찾기
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, today.getYear(), today.getMonthValue())
+                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.MONTH_BUDGET_NOT_FOUND));
+
+        //한달 지출률 계산
+        double monthUsedAmountPercent = ((double)monthBudget.getUsedAmount() / (double)monthBudget.getMonthBudget())*100;
+
+        //소수점 6번째자리에서 반올림해서 리턴
+        return Math.round(monthUsedAmountPercent*1000000)/1000000.0;
+    }
     private long roundDownToNearestHundred(long amount) {
         return (amount / 100) * 100;
     }
