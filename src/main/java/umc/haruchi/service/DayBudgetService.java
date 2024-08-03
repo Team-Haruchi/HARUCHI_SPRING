@@ -75,11 +75,12 @@ public class DayBudgetService {
 
     public List<Integer> findAllBudget(Long memberId) {
 
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month)
+                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.NOT_DAY_BUDGET));
+
         List<DayBudget> dayBudgets = monthBudgetService.distributeDayBudgets(memberId);
         dayBudgetRepository.saveAll(dayBudgets);
 
-        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month)
-                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.NOT_DAY_BUDGET));
 
         List<Integer> allBudget = new ArrayList<>();
         for(int i=day; i<=lastDay; i++){
