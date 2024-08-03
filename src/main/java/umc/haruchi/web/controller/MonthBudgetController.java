@@ -36,4 +36,12 @@ public class MonthBudgetController {
         MonthBudget monthBudget = monthBudgetService.getMonthBudget(memberDetail.getMember().getId());
         return ApiResponse.onSuccess(MonthBudgetConverter.toGetMonthResultDTO(monthBudget));
     }
+
+    //한달 지출률 조회
+    @Operation(summary =  "한달 지출률 조회 API", description = "본인의 한달 지출률을 조회하는 API")
+    @GetMapping("/percent")
+    public ApiResponse<MonthBudgetResponseDTO.GetMonthUsedPercentResultDTO> getMonthBudgetPercent(@AuthenticationPrincipal MemberDetail memberDetail) {
+        double monthBudgetPercent = monthBudgetService.getMonthUsedPercent(memberDetail.getMember().getId());
+        return ApiResponse.onSuccess(MonthBudgetConverter.toGetMonthUsedPercentResultDTO(monthBudgetPercent));
+    }
 }
