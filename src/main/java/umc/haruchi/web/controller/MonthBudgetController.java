@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import umc.haruchi.apiPayload.ApiResponse;
 import umc.haruchi.config.login.auth.MemberDetail;
 import umc.haruchi.converter.MonthBudgetConverter;
+import umc.haruchi.domain.DayBudget;
 import umc.haruchi.domain.Member;
 import umc.haruchi.domain.MonthBudget;
 import umc.haruchi.service.MonthBudgetService;
@@ -15,6 +16,7 @@ import umc.haruchi.web.dto.MonthBudgetRequestDTO;
 import umc.haruchi.web.dto.MonthBudgetResponseDTO;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -49,8 +51,9 @@ public class MonthBudgetController {
     //한 주 예산 금액 조회
     @Operation(summary = "한 주 예산 금액 조회 API", description = "본인의 한 주 예산 금액을 조회하는 API 입니다.")
     @GetMapping("/week")
-    public ApiResponse<MonthBudgetResponseDTO.GetWeekBudgetResultDTO> getWeekBudget(@AuthenticationPrincipal MemberDetail memberDetail) {
-        Integer weekBudget = monthBudgetService.getWeekBudget(memberDetail.getMember().getId());
-        return ApiResponse.onSuccess(MonthBudgetConverter.toGetWeekBudgetResultDTO(weekBudget));
+    public ApiResponse<MonthBudgetResponseDTO.GetWeekBudgetResultListDTO> getWeekBudget(@AuthenticationPrincipal MemberDetail memberDetail) {
+        List<DayBudget> weekBudget = monthBudgetService.getWeekBudget(memberDetail.getMember().getId());
+        List<Integer> currentWeek = monthBudgetService.getMonthAndWeek(memberDetail.getMember().getId());
+        return ApiResponse.onSuccess(MonthBudgetConverter.toGetWeekBudgetResultListDTO(weekBudget, currentWeek.get(0), currentWeek.get(1)));
     }
 }

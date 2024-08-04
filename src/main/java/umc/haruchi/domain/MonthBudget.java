@@ -43,7 +43,7 @@ public class MonthBudget extends BaseEntity {
     @Builder.Default
     private List<DayBudget> dayBudgetList = new ArrayList<>();
 
-    @PrePersist
+    //@PrePersist
     public void prePersist() {
         LocalDate now = LocalDate.now();
         this.year = now.getYear();
@@ -57,10 +57,9 @@ public class MonthBudget extends BaseEntity {
         member.getMonthBudgetList().add(this);
     }
 
-    public void updateMonthBudget(Long monthBudget) {
-        LocalDate now = LocalDate.now();
-        this.year = now.getYear();
-        this.month = now.getMonthValue();
+    public void updateMonthBudget(Long monthBudget, Integer year, Integer month) {
+        this.year = year;
+        this.month = month;
         this.monthBudget = monthBudget;
     }
 

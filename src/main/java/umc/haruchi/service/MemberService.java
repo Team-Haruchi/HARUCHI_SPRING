@@ -26,6 +26,7 @@ import umc.haruchi.repository.*;
 import umc.haruchi.web.dto.MemberRequestDTO;
 import umc.haruchi.web.dto.MemberResponseDTO;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -51,12 +52,13 @@ public class MemberService {
     // 회원가입
     @Transactional
     public Member joinMember(MemberRequestDTO.MemberJoinDTO request) throws Exception {
+        LocalDate today = LocalDate.now();
 
         Member newMember = MemberConverter.toMember(request);
         newMember.encodePassword(passwordEncoder.encode(request.getPassword()));
 
         //회원가입 시 monthBudget 생성
-        MonthBudget monthBudget = MonthBudgetConverter.toMonthBudget(request.getMonthBudget());
+        MonthBudget monthBudget = MonthBudgetConverter.toMonthBudgetWithMonth(request.getMonthBudget(), today.getYear(), today.getMonthValue());
         monthBudget.setMember(newMember);
         monthBudgetRepository.save(monthBudget);
 
