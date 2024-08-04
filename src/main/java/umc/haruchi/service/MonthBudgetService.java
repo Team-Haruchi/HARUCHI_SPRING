@@ -299,6 +299,44 @@ public class MonthBudgetService {
         return currentWeek;
     }
 
+
+    public Integer getMonthLeftDay(Long memberId) {
+        LocalDate today = LocalDate.now();
+
+        //member가 존재하는 지 확인
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.NO_MEMBER_EXIST));
+
+        //member와 year, month 기반으로 해당하는 monthBudget 찾기
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, today.getYear(), today.getMonthValue())
+                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.MONTH_BUDGET_NOT_FOUND));
+
+        //현재 날짜
+        int nowDay = today.getDayOfMonth();
+
+        int year = monthBudget.getYear();
+        int month = monthBudget.getMonth();
+        int dayInMonth = YearMonth.of(year, month).lengthOfMonth();
+
+        //남은 일자
+        return dayInMonth - nowDay + 1;
+    }
+
+    public Long getMonthLeftBudget(Long memberId) {
+        LocalDate today = LocalDate.now();
+
+        //member가 존재하는 지 확인
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.NO_MEMBER_EXIST));
+
+        //member와 year, month 기반으로 해당하는 monthBudget 찾기
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), today.getYear(), today.getMonthValue())
+                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.MONTH_BUDGET_NOT_FOUND));
+
+        //남은 예산
+        return monthBudget.getMonthBudget() -monthBudget.getUsedAmount();
+    }
+
     private long roundDownToNearestHundred(long amount) {
         return (amount / 100) * 100;
     }

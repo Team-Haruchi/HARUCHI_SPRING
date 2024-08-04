@@ -67,4 +67,13 @@ public class MonthBudgetResponseDTO {
         Integer month;
         Integer week;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetMonthLeftNowResultDTO {
+        Integer leftDay;
+        Long leftBudget;
+    }
 }
