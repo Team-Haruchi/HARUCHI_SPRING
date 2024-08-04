@@ -24,7 +24,7 @@ public class BudgetRedistributionController {
 
     private final BudgetRedistributionService budgetRedistributionService;
 
-    @Operation(summary = "넘겨쓰기 API", description = "EVENLY(1/n),DATE(특정일),SAFEBOX(targetId null)")
+    @Operation(summary = "넘겨쓰기 API", description = "DATE(특정일)을 제외한 EVENLY(1/n) 와 SAFEBOX는 targetId를 null로 넘겨주세요")
     @PostMapping("/push")
     public ApiResponse<BudgetRedistributionResponseDTO.BudgetPushResultDTO> pushBudget(@Valid @RequestBody BudgetRedistributionRequestDTO.createPushDTO request,
                                                                                        @AuthenticationPrincipal MemberDetail memberDetail){
@@ -32,7 +32,7 @@ public class BudgetRedistributionController {
         return ApiResponse.onSuccess(BudgetRedistributionConverter.toBudgetPushResultDTO(pushPlusClosing));
     }
 
-    @Operation(summary = "당겨쓰기 API", description = "EVENLY(1/n),DATE(특정일),SAFEBOX(sourceId null)")
+    @Operation(summary = "당겨쓰기 API", description = "DATE(특정일)을 제외한 EVENLY(1/n) 와 SAFEBOX는 sourceId를 null로 넘겨주세요")
     @PostMapping("/pull")
     public ApiResponse<BudgetRedistributionResponseDTO.BudgetPullResultDTO> pullBudget(@Valid @RequestBody BudgetRedistributionRequestDTO.createPullDTO request,
                                                                                        @AuthenticationPrincipal MemberDetail memberDetail){
