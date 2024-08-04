@@ -511,10 +511,13 @@ public class BudgetRedistributionService {
         return pullMinusClosingRepository.save(pullMinusClosing);
     }
 
-    public Long calculatingAmount(int year, int month, int day, Long amount, Long memberId) {
+    public Long calculatingAmount(int year, int month, int day, Long memberId) {
 
         MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month)
                 .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
+
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
+                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
 
         //이번 달 남은 일 수 알아내기(본인 제외)
         long dayCount = monthBudget.getDayBudgetList().stream()
@@ -525,13 +528,13 @@ public class BudgetRedistributionService {
             throw new BudgetRedistributionHandler(FINAL_DAY);
         }
 
-        long totalAmount = amount;
+        long totalAmount = dayBudget.getDayBudget();
 
-        if(amount > 0) {
+        if(totalAmount > 0) {
             return totalAmount / dayCount;
         }
-        else if(amount < 0) {
-            totalAmount = -1 * amount; //양수로 변경
+        else if(totalAmount < 0) {
+            totalAmount = -1 * totalAmount; //양수로 변경
             return totalAmount / dayCount;
         }
         else {
