@@ -35,7 +35,6 @@ public class BudgetRedistributionConverter {
         return PushPlusClosing.builder()
                 .closingOption(true)
                 .redistributionOption(requestDTO.getRedistributionOption())
-                .amount(requestDTO.getAmount())
                 .sourceDayBudget(dayBudget)
                 .targetDayBudget(null)
                 .build();
@@ -45,7 +44,6 @@ public class BudgetRedistributionConverter {
         return PullMinusClosing.builder()
                 .closingOption(true)
                 .redistributionOption(requestDTO.getRedistributionOption())
-                .amount(requestDTO.getAmount())
                 .sourceDayBudget(null)
                 .targetDayBudget(dayBudget)
                 .build();

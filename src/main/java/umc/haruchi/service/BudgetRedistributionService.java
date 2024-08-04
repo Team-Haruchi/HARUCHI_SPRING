@@ -309,6 +309,22 @@ public class BudgetRedistributionService {
         return (amount / 100) * 100;
     }
 
+    //dayBudget이 양수인지 0인지 음수인지
+    public boolean plusOrZeroOrMinus(BudgetRedistributionRequestDTO.createClosingDTO request, Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberHandler(NO_MEMBER_EXIST)); //영속화
+
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), request.getYear(), request.getMonth())
+                .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getDay())
+                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
+        if(dayBudget.getDayBudget() >= 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     //분배
     @Transactional
     public PushPlusClosing closingPlusOrZero(BudgetRedistributionRequestDTO.createClosingDTO request, Long memberId) {
@@ -329,10 +345,10 @@ public class BudgetRedistributionService {
         long dayCount = monthBudget.getDayBudgetList().stream()
                 .filter(budget -> budget.getDay() >= request.getDay()).count() - 1;
 
-        long totalAmount = request.getAmount();
+        long totalAmount = dayBudget.getDayBudget();
 
         //분배
-        if (request.getAmount() > 0) {
+        if (dayBudget.getDayBudget() > 0) {
             //고르게 넘기기(233원씩 넘겨준다고하면 200원씩 분배하고 33원씩 * 일수 -> 세이프박스)
             //dayCount가 0일때 -> 마지막 날일 때 예외처리
             if(dayCount == 0) {
@@ -414,7 +430,7 @@ public class BudgetRedistributionService {
         long dayCount = monthBudget.getDayBudgetList().stream()
                 .filter(budget -> budget.getDay() >= request.getDay()).count() - 1;
 
-        long totalAmount = -1 * request.getAmount(); //양수로 변경
+        long totalAmount = -1L * dayBudget.getDayBudget(); //양수로 변경
 
         long safeBoxAmount = 0;
 
