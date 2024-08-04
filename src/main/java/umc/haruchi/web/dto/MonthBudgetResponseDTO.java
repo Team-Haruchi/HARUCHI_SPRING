@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import umc.haruchi.domain.DayBudget;
+import umc.haruchi.domain.enums.ClosingStatus;
 import umc.haruchi.domain.enums.DayBudgetStatus;
 
 import java.time.LocalDate;
@@ -56,6 +57,7 @@ public class MonthBudgetResponseDTO {
         Long day;
         Integer dayBudget;
         DayBudgetStatus status;
+        ClosingStatus closingState;
     }
 
     @Builder

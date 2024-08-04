@@ -2,6 +2,7 @@ package umc.haruchi.converter;
 
 import umc.haruchi.domain.DayBudget;
 import umc.haruchi.domain.MonthBudget;
+import umc.haruchi.domain.enums.DayBudgetStatus;
 import umc.haruchi.web.dto.MonthBudgetRequestDTO;
 import umc.haruchi.web.dto.MonthBudgetResponseDTO;
 
@@ -56,6 +57,7 @@ public class MonthBudgetConverter {
                 .day(dayBudget.getDay())
                 .dayBudget(dayBudget.getDayBudget())
                 .status(dayBudget.getDayBudgetStatus())
+                .closingState(dayBudget.getClosingStatus())
                 .build();
     }
 
