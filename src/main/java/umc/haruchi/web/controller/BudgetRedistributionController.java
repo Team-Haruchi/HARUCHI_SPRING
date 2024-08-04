@@ -54,7 +54,7 @@ public class BudgetRedistributionController {
 //        }
 //    }
 
-    @Operation(summary = "지출 마감 API", description = "0일때는 1/n 에러처리 되어있습니다.")
+    @Operation(summary = "지출 마감 API", description = "0일떄는 옵션을 ZERO로 넘겨주시고, 마지막 날의 1/n 방식은 에러처리 되어있습니다.")
     @PostMapping("/closing")
     public ApiResponse<BudgetRedistributionResponseDTO.BudgetClosingResultDTO> closingBudget(@Valid @RequestBody BudgetRedistributionRequestDTO.createClosingDTO request,
                                                                                              @AuthenticationPrincipal MemberDetail memberDetail){
