@@ -69,4 +69,11 @@ public class MonthBudgetConverter {
                 .weekBudget(weekBudgetDTOList)
                 .build();
     }
+
+    public static MonthBudgetResponseDTO.GetMonthLeftNowResultDTO toGetMonthLeftNowResultDTO(Integer leftDay, Long leftBudget) {
+        return MonthBudgetResponseDTO.GetMonthLeftNowResultDTO.builder()
+                .leftDay(leftDay)
+                .leftBudget(leftBudget)
+                .build();
+    }
 }

@@ -56,4 +56,13 @@ public class MonthBudgetController {
         List<Integer> currentWeek = monthBudgetService.getMonthAndWeek(memberDetail.getMember().getId());
         return ApiResponse.onSuccess(MonthBudgetConverter.toGetWeekBudgetResultListDTO(weekBudget, currentWeek.get(0), currentWeek.get(1)));
     }
+
+    //남은 일정 및 금액 조회
+    @Operation(summary = "남은 일정 및 금액 조회 API", description = "본인의 남은 한달 일정 및 금액을 조회하는 API")
+    @GetMapping("/left-now")
+    public ApiResponse<MonthBudgetResponseDTO.GetMonthLeftNowResultDTO> getMonthLeftNow(@AuthenticationPrincipal MemberDetail memberDetail) {
+        Integer leftDay = monthBudgetService.getMonthLeftDay(memberDetail.getMember().getId());
+        Long leftBudget = monthBudgetService.getMonthLeftBudget(memberDetail.getMember().getId());
+        return ApiResponse.onSuccess(MonthBudgetConverter.toGetMonthLeftNowResultDTO(leftDay, leftBudget));
+    }
 }
