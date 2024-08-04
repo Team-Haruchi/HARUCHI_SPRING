@@ -6,6 +6,7 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import umc.haruchi.domain.common.BaseEntity;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,8 @@ public class Member extends BaseEntity {
 
     @Column(nullable = false)
     private String password;
+
+    private LocalDate lastClosing;
 
 //    @Enumerated(EnumType.STRING)
 //    @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'LOGOUT'") // LOGIN, LOGOUT
@@ -59,5 +62,9 @@ public class Member extends BaseEntity {
 
     public void subSafeBox(long safeBoxAmount) {
         safeBox -= safeBoxAmount;
+    }
+
+    public void setLastClosing() {
+        this.lastClosing = LocalDate.now();
     }
 }
