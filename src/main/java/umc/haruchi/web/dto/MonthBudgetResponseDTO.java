@@ -4,9 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import umc.haruchi.domain.DayBudget;
+import umc.haruchi.domain.enums.DayBudgetStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class MonthBudgetResponseDTO {
     @Builder
@@ -43,5 +46,25 @@ public class MonthBudgetResponseDTO {
     @AllArgsConstructor
     public static class GetMonthUsedPercentResultDTO {
         double monthUsedPercent;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetWeekBudgetResultDTO {
+        Long day;
+        Integer dayBudget;
+        DayBudgetStatus status;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GetWeekBudgetResultListDTO {
+        List<GetWeekBudgetResultDTO> weekBudget;
+        Integer month;
+        Integer week;
     }
 }
