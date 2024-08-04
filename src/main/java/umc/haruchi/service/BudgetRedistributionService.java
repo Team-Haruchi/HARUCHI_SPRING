@@ -13,6 +13,8 @@ import umc.haruchi.domain.enums.DayBudgetStatus;
 import umc.haruchi.repository.*;
 import umc.haruchi.web.dto.BudgetRedistributionRequestDTO;
 import java.time.LocalDate;
+import java.util.List;
+
 import static umc.haruchi.apiPayload.code.status.ErrorStatus.*;
 import static umc.haruchi.domain.enums.RedistributionOption.*;
 
@@ -26,6 +28,8 @@ public class BudgetRedistributionService {
     private final PushPlusClosingRepository pushPlusClosingRepository;
     private final PullMinusClosingRepository pullMinusClosingRepository;
     private final MemberRepository memberRepository;
+    private final IncomeRepository incomeRepository;
+    private final ExpenditureRepository expenditureRepository;
 
     LocalDate now = LocalDate.now(); // 현재 날짜 가져오기
     int year = now.getYear();
@@ -305,6 +309,22 @@ public class BudgetRedistributionService {
         return (amount / 100) * 100;
     }
 
+    //dayBudget이 양수인지 0인지 음수인지
+    public boolean plusOrZeroOrMinus(BudgetRedistributionRequestDTO.createClosingDTO request, Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberHandler(NO_MEMBER_EXIST)); //영속화
+
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), request.getYear(), request.getMonth())
+                .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getDay())
+                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
+        if(dayBudget.getDayBudget() >= 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     //분배
     @Transactional
     public PushPlusClosing closingPlusOrZero(BudgetRedistributionRequestDTO.createClosingDTO request, Long memberId) {
@@ -325,10 +345,10 @@ public class BudgetRedistributionService {
         long dayCount = monthBudget.getDayBudgetList().stream()
                 .filter(budget -> budget.getDay() >= request.getDay()).count() - 1;
 
-        long totalAmount = request.getAmount();
+        long totalAmount = dayBudget.getDayBudget();
 
         //분배
-        if (request.getAmount() > 0) {
+        if (dayBudget.getDayBudget() > 0) {
             //고르게 넘기기(233원씩 넘겨준다고하면 200원씩 분배하고 33원씩 * 일수 -> 세이프박스)
             //dayCount가 0일때 -> 마지막 날일 때 예외처리
             if(dayCount == 0) {
@@ -386,6 +406,7 @@ public class BudgetRedistributionService {
         }
         PushPlusClosing pushPlusClosing = BudgetRedistributionConverter.toPlusClosing(request, dayBudget);
         dayBudget.changeDayBudgetStatus(); //INACTIVE로 변경
+        member.setLastClosing();
         return pushPlusClosingRepository.save(pushPlusClosing);
     }
 
@@ -409,7 +430,7 @@ public class BudgetRedistributionService {
         long dayCount = monthBudget.getDayBudgetList().stream()
                 .filter(budget -> budget.getDay() >= request.getDay()).count() - 1;
 
-        long totalAmount = -1 * request.getAmount(); //양수로 변경
+        long totalAmount = -1L * dayBudget.getDayBudget(); //양수로 변경
 
         long safeBoxAmount = 0;
 
@@ -478,6 +499,7 @@ public class BudgetRedistributionService {
         dayBudget.subAmount(dayBudget.getDayBudget()); // 양수일 때도 음수일 때도 0이 됨
         PullMinusClosing pullMinusClosing = BudgetRedistributionConverter.toMinusClosing(request, dayBudget);
         dayBudget.changeDayBudgetStatus(); //INACTIVE로 변경
+        member.setLastClosing();
         return pullMinusClosingRepository.save(pullMinusClosing);
     }
 
@@ -508,5 +530,75 @@ public class BudgetRedistributionService {
             //0이면 1/n 요청 들어올 수 x
             throw new BudgetRedistributionHandler(ZERO_AMOUNT);
         }
+    }
+
+    public List<Income> getIncomeList(int year, int month, int day, Long memberId) {
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month)
+                .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
+                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
+        return incomeRepository.findByDayBudget(dayBudget);
+    }
+
+    public List<Expenditure> getExpenditureList(int year, int month, int day, Long memberId) {
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month)
+                .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
+                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
+        return expenditureRepository.findByDayBudget(dayBudget);
+    }
+
+    public List<PullMinusClosing> getPullList(int year, int month, int day, Long memberId) {
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month)
+                .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
+                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
+        return pullMinusClosingRepository.findByTargetDayBudgetAndClosingOptionIsFalse(dayBudget);
+    }
+
+    public List<PushPlusClosing> getPushList(int year, int month, int day, Long memberId) {
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month)
+                .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
+                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
+        return pushPlusClosingRepository.findBySourceDayBudgetAndClosingOptionIsFalse(dayBudget);
+    }
+
+    public Integer getDayBudget(int year, int month, int day, Long memberId) {
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month)
+                .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
+                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
+        return dayBudget.getDayBudget();
+    }
+
+    public Long getTotalExpenditureAmount(int year, int month, int day, Long memberId) {
+        List<Expenditure> expenditureList = getExpenditureList(year, month, day, memberId);
+        long sum = expenditureList.stream().mapToLong(e -> e.getExpenditureAmount()).sum();
+        return sum;
+    }
+
+    public Boolean closingCheck(int year, int month, int day, Long memberId) {
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month)
+                .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
+                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
+        if(!pullMinusClosingRepository.findByTargetDayBudgetAndClosingOptionIsTrue(dayBudget).isEmpty()) {
+            return true;
+        }
+        else if(!pushPlusClosingRepository.findBySourceDayBudgetAndClosingOptionIsTrue(dayBudget).isEmpty()) {
+            return true;
+        }
+        return false;
+    }
+
+    public LocalDate closingCheckLast(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberHandler(NO_MEMBER_EXIST)); //영속화
+        LocalDate lastClosing = member.getLastClosing();
+        if(lastClosing == null) {
+            throw new BudgetRedistributionHandler(NOTHING_CLOSING);
+        }
+        return lastClosing;
     }
 }

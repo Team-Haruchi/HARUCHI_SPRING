@@ -64,8 +64,5 @@ public class BudgetRedistributionRequestDTO {
 
         @NotNull(message = "day 값은 필수 입력 값입니다.")
         int day;
-
-        @NotNull(message = "amount 값은 필수 입력 값입니다.")
-        Long amount;
     }
 }
