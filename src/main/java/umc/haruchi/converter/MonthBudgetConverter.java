@@ -53,6 +53,9 @@ public class MonthBudgetConverter {
     }
 
     public static MonthBudgetResponseDTO.GetWeekBudgetResultDTO toGetWeekBudgetResultDTO(DayBudget dayBudget) {
+        if(dayBudget == null)
+            return null;
+
         return MonthBudgetResponseDTO.GetWeekBudgetResultDTO.builder()
                 .day(dayBudget.getDay())
                 .dayBudget(dayBudget.getDayBudget())

@@ -4,6 +4,7 @@ import umc.haruchi.domain.DayBudget;
 import umc.haruchi.domain.Expenditure;
 import umc.haruchi.domain.Income;
 import umc.haruchi.domain.MonthBudget;
+import umc.haruchi.domain.enums.ClosingStatus;
 import umc.haruchi.domain.enums.DayBudgetStatus;
 import umc.haruchi.web.dto.DayBudgetRequestDTO;
 import umc.haruchi.web.dto.DayBudgetResponseDTO;
@@ -14,11 +15,12 @@ import java.util.List;
 
 public class DayBudgetConverter {
 
-    public static DayBudget toDayBudget(Integer dayBudget, int day, DayBudgetStatus status, MonthBudget monthBudget) {
+    public static DayBudget toDayBudget(Integer dayBudget, int day, DayBudgetStatus status, ClosingStatus closingStatus, MonthBudget monthBudget) {
         return DayBudget.builder()
                 .dayBudget(dayBudget)
                 .day(Long.valueOf(day))
                 .dayBudgetStatus(status)
+                .closingStatus(closingStatus)
                 .monthBudget(monthBudget)
                 .build();
     }

@@ -35,7 +35,6 @@ public class DayBudget extends BaseEntity {
     private Integer dayBudget;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'ETC'")
     private ClosingStatus closingStatus;
 
     @Enumerated(EnumType.STRING)
