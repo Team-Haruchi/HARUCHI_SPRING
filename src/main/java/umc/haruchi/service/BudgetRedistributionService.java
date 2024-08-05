@@ -9,6 +9,7 @@ import umc.haruchi.apiPayload.exception.handler.MemberHandler;
 import umc.haruchi.apiPayload.exception.handler.MonthBudgetHandler;
 import umc.haruchi.converter.BudgetRedistributionConverter;
 import umc.haruchi.domain.*;
+import umc.haruchi.domain.enums.ClosingStatus;
 import umc.haruchi.domain.enums.DayBudgetStatus;
 import umc.haruchi.repository.*;
 import umc.haruchi.web.dto.BudgetRedistributionRequestDTO;
@@ -347,8 +348,15 @@ public class BudgetRedistributionService {
 
         long totalAmount = dayBudget.getDayBudget();
 
+        if(dayBudget.getDayBudget() > 0) {
+            dayBudget.setClosingStatus(ClosingStatus.PLUS);
+        } else {
+            dayBudget.setClosingStatus(ClosingStatus.ZERO);
+        }
+
         //분배
         if (dayBudget.getDayBudget() > 0) {
+
             //고르게 넘기기(233원씩 넘겨준다고하면 200원씩 분배하고 33원씩 * 일수 -> 세이프박스)
             //dayCount가 0일때 -> 마지막 날일 때 예외처리
             if(dayCount == 0) {
@@ -393,19 +401,19 @@ public class BudgetRedistributionService {
                                 budget.subAmount(budget.getDayBudget() % 100);
                             }
                         });
-
-                dayBudget.subAmount(dayBudget.getDayBudget()); //dayBudget의 amount는 0으로
                 member.addSafeBox(safeBoxAmount);
 
             } else if (request.getRedistributionOption().equals(SAFEBOX)) {
                 // 세이프 박스에 넘기기(233원을 넘겨준다고하면 233그대로 넘김)
                 // 세이프박스에 저장
                 member.addSafeBox(totalAmount);
-                dayBudget.subAmount(dayBudget.getDayBudget()); //dayBudget의 amount는 0으로
             }
         }
+
+        dayBudget.subAmount(dayBudget.getDayBudget()); //dayBudget의 amount는 0으로
         PushPlusClosing pushPlusClosing = BudgetRedistributionConverter.toPlusClosing(request, dayBudget);
         dayBudget.changeDayBudgetStatus(); //INACTIVE로 변경
+
         member.setLastClosing();
         return pushPlusClosingRepository.save(pushPlusClosing);
     }
@@ -494,7 +502,7 @@ public class BudgetRedistributionService {
             // 세이프박스에서 차감
             member.subSafeBox(totalAmount);
         }
-
+        dayBudget.setClosingStatus(ClosingStatus.MINUS);
         member.addSafeBox(safeBoxAmount);
         dayBudget.subAmount(dayBudget.getDayBudget()); // 양수일 때도 음수일 때도 0이 됨
         PullMinusClosing pullMinusClosing = BudgetRedistributionConverter.toMinusClosing(request, dayBudget);
@@ -503,10 +511,13 @@ public class BudgetRedistributionService {
         return pullMinusClosingRepository.save(pullMinusClosing);
     }
 
-    public Long calculatingAmount(int year, int month, int day, Long amount, Long memberId) {
+    public Long calculatingAmount(int year, int month, int day, Long memberId) {
 
         MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month)
                 .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
+
+        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
+                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
 
         //이번 달 남은 일 수 알아내기(본인 제외)
         long dayCount = monthBudget.getDayBudgetList().stream()
@@ -517,13 +528,13 @@ public class BudgetRedistributionService {
             throw new BudgetRedistributionHandler(FINAL_DAY);
         }
 
-        long totalAmount = amount;
+        long totalAmount = dayBudget.getDayBudget();
 
-        if(amount > 0) {
+        if(totalAmount > 0) {
             return totalAmount / dayCount;
         }
-        else if(amount < 0) {
-            totalAmount = -1 * amount; //양수로 변경
+        else if(totalAmount < 0) {
+            totalAmount = -1 * totalAmount; //양수로 변경
             return totalAmount / dayCount;
         }
         else {

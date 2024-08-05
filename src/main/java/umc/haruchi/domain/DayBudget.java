@@ -6,6 +6,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import umc.haruchi.domain.common.BaseEntity;
+import umc.haruchi.domain.enums.ClosingStatus;
 import umc.haruchi.domain.enums.DayBudgetStatus;
 
 import java.time.LocalDate;
@@ -32,6 +33,10 @@ public class DayBudget extends BaseEntity {
     @Column(nullable = false)
     @ColumnDefault("0")
     private Integer dayBudget;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'ETC'")
+    private ClosingStatus closingStatus;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(10) DEFAULT 'ACTIVE'")
@@ -103,5 +108,9 @@ public class DayBudget extends BaseEntity {
 
     public void changeDayBudgetStatus() {
         dayBudgetStatus = DayBudgetStatus.INACTIVE;
+    }
+
+    public void setClosingStatus(ClosingStatus closingStatus) {
+        this.closingStatus = closingStatus;
     }
 }

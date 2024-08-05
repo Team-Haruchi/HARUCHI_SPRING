@@ -24,7 +24,7 @@ public class BudgetRedistributionController {
 
     private final BudgetRedistributionService budgetRedistributionService;
 
-    @Operation(summary = "넘겨쓰기 API", description = "EVENLY(1/n),DATE(특정일),SAFEBOX(targetId null)")
+    @Operation(summary = "넘겨쓰기 API", description = "DATE(특정일)을 제외한 EVENLY(1/n) 와 SAFEBOX는 targetId를 null로 넘겨주세요")
     @PostMapping("/push")
     public ApiResponse<BudgetRedistributionResponseDTO.BudgetPushResultDTO> pushBudget(@Valid @RequestBody BudgetRedistributionRequestDTO.createPushDTO request,
                                                                                        @AuthenticationPrincipal MemberDetail memberDetail){
@@ -32,27 +32,13 @@ public class BudgetRedistributionController {
         return ApiResponse.onSuccess(BudgetRedistributionConverter.toBudgetPushResultDTO(pushPlusClosing));
     }
 
-    @Operation(summary = "당겨쓰기 API", description = "EVENLY(1/n),DATE(특정일),SAFEBOX(sourceId null)")
+    @Operation(summary = "당겨쓰기 API", description = "DATE(특정일)을 제외한 EVENLY(1/n) 와 SAFEBOX는 sourceId를 null로 넘겨주세요")
     @PostMapping("/pull")
     public ApiResponse<BudgetRedistributionResponseDTO.BudgetPullResultDTO> pullBudget(@Valid @RequestBody BudgetRedistributionRequestDTO.createPullDTO request,
                                                                                        @AuthenticationPrincipal MemberDetail memberDetail){
         PullMinusClosing pushMinusClosing = budgetRedistributionService.pull(request, memberDetail.getMember().getId());
         return ApiResponse.onSuccess(BudgetRedistributionConverter.toBudgetPullResultDTO(pushMinusClosing));
     }
-
-//    @Operation(summary = "지출 마감 API", description = "음수,양수,0으로 넘겨주시고, 0일 떄 옵션(EVENLY,SAFEBOX)은 ZERO로 넘겨주세요")
-//    @PostMapping("/closing")
-//    public ApiResponse<BudgetRedistributionResponseDTO.BudgetClosingResultDTO> closingBudget(@Valid @RequestBody BudgetRedistributionRequestDTO.createClosingDTO request,
-//                                                                                             @AuthenticationPrincipal MemberDetail memberDetail){
-//        if(request.getAmount() >= 0) {
-//            PushPlusClosing pushPlusClosing = budgetRedistributionService.closingPlusOrZero(request, memberDetail.getMember().getId());
-//            return ApiResponse.onSuccess(BudgetRedistributionConverter.toBudgetClosingResultDTO(pushPlusClosing));
-//        }
-//        else {
-//            PullMinusClosing pullMinusClosing = budgetRedistributionService.closingMinus(request, memberDetail.getMember().getId());
-//            return ApiResponse.onSuccess(BudgetRedistributionConverter.toBudgetClosingResultDTO(pullMinusClosing));
-//        }
-//    }
 
     @Operation(summary = "지출 마감 API", description = "0일떄는 옵션을 ZERO로 넘겨주시고, 마지막 날의 1/n 방식은 에러처리 되어있습니다.")
     @PostMapping("/closing")
@@ -69,14 +55,13 @@ public class BudgetRedistributionController {
         }
     }
 
-    @Operation(summary = "지출 마감에서 1/n경우의 하루 차감/분배 값 조회 API", description = "지출 마감 영수증에서 고르게 분배하기 선택 시 얼마씩 분배/차감할 지 알려주는 API입니다. +, - 값을 넘겨주세요.")
+    @Operation(summary = "지출 마감에서 1/n경우의 하루 차감/분배 값 조회 API", description = "지출 마감 영수증에서 고르게 분배하기 선택 시 얼마씩 분배/차감할 지 알려주는 API입니다.")
     @GetMapping("/closing/amount")
     public ApiResponse<BudgetRedistributionResponseDTO.GetCalculatedAmountResultDTO> getCalculatedAmount(@RequestParam @NotNull(message = "year 값은 필수 입력 값입니다.") int year,
                                                                                                          @RequestParam @NotNull(message = "month 값은 필수 입력 값입니다.") int month,
                                                                                                          @RequestParam @NotNull(message = "day 값은 필수 입력 값입니다.") int day,
-                                                                                                         @RequestParam @NotNull(message = "amount 값은 필수 입력 값입니다.") Long amount,
                                                                                                          @AuthenticationPrincipal MemberDetail memberDetail){
-        Long calculatedAmount = budgetRedistributionService.calculatingAmount(year, month, day, amount, memberDetail.getMember().getId());
+        Long calculatedAmount = budgetRedistributionService.calculatingAmount(year, month, day, memberDetail.getMember().getId());
         return ApiResponse.onSuccess(BudgetRedistributionConverter.toGetCalculatedAmountResultDTO(calculatedAmount));
     }
 
