@@ -20,6 +20,8 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    // 요청과 들어온 토큰을 뽑아내 유효한 토큰인지 확인하고 인증을 하는 Filter
+    // 로그아웃된(redis blacklist에 들어간) 토큰인지도 검증
 
     private final JwtUtil jwtUtil;
     private final RedisTemplate<String, Object> redisTemplate;

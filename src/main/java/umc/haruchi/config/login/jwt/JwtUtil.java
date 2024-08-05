@@ -27,6 +27,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 @Component
 public class JwtUtil implements InitializingBean {
+    // 토큰의 생성, 검증, 토큰에서 인증 정보 얻기, 유효 시간 얻기 등 토큰을 활용(Util)하는 class
 
     private final RedisTemplate redisTemplate;
     @Value("${spring.jwt.secret}")

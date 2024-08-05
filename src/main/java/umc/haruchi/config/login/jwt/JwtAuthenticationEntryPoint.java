@@ -17,6 +17,7 @@ import java.io.IOException;
 @Slf4j
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
+    // 요청(Entry) 시 액세스 토큰이 필요한데 토큰이 요청과 함께 들어오지 않은 경우 에러 메시지를 전달
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,

@@ -15,6 +15,8 @@ import java.io.IOException;
 
 @Component
 public class JwtExceptionHandlerFilter extends OncePerRequestFilter {
+    // JwtAuthenticationFilter의 예외 처리를 해주는 Filter
+    // 해당 Filter의 앞에 존재하며, 해당 Filter에서 발생하는 에러 메시지를 컨트롤러에 전달할 수 있게 해줌
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
