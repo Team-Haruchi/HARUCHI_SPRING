@@ -15,6 +15,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class MemberDetailService implements UserDetailsService {
+    // 유저의 인증을 담은 객체를 생성하는 서비스
 
     private final MemberRepository memberRepository;
 

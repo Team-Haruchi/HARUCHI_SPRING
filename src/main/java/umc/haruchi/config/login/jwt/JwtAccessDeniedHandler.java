@@ -17,6 +17,7 @@ import java.io.IOException;
 @Slf4j
 @Component
 public class JwtAccessDeniedHandler implements AccessDeniedHandler {
+    // 권한이 없거나 접근할 수 없는 곳에 요청을 한 경우 에러 메시지를 전달
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
