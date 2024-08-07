@@ -12,6 +12,7 @@ import umc.haruchi.converter.MonthBudgetConverter;
 import umc.haruchi.domain.DayBudget;
 import umc.haruchi.domain.Member;
 import umc.haruchi.domain.MonthBudget;
+import umc.haruchi.domain.enums.ClosingStatus;
 import umc.haruchi.domain.enums.DayBudgetStatus;
 import umc.haruchi.repository.DayBudgetRepository;
 import umc.haruchi.repository.MemberRepository;
@@ -115,12 +116,13 @@ public class MonthBudgetService {
             //현재 일자의 전날까지는 status가 INACTIVE인 dayBudget을 생성하고
             //현재 일자부터 말일까지는 status가 ACTIVE인 dayBudget 생성
             DayBudgetStatus status = (day < nowDay) ? DayBudgetStatus.INACTIVE : DayBudgetStatus.ACTIVE;
+            ClosingStatus closingStatus = (day < nowDay) ? ClosingStatus.ZERO : null;
             //현재 일자 전날까지는 0으로 설정, 현재 일자부터 말일까지는 distributedAmount로 설정
             int nowDistributedAmount = (day < nowDay) ? 0 : distributedAmount;
 
             //이미 생성된 dayBudget이 있으면 update, 아니면 create
             DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, currentDay)
-                    .orElseGet(() -> DayBudgetConverter.toDayBudget(nowDistributedAmount, currentDay, status, monthBudget));
+                    .orElseGet(() -> DayBudgetConverter.toDayBudget(nowDistributedAmount, currentDay, status, closingStatus, monthBudget));
 
             dayBudget.setStatus(status);
             dayBudget.setDayBudget(nowDistributedAmount);
@@ -151,11 +153,12 @@ public class MonthBudgetService {
             final int currentDay = day;
             //이전 달의 dayBudget을 모두 INACTIVE로 생성
             DayBudgetStatus status = DayBudgetStatus.INACTIVE;
+            ClosingStatus closingStatus = ClosingStatus.ZERO;
             int nowDistributedAmount = 0;
 
             //dayBudget 생성 혹은 업뎃
             DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
-                    .orElseGet(() -> DayBudgetConverter.toDayBudget(nowDistributedAmount, currentDay, status, monthBudget));
+                    .orElseGet(() -> DayBudgetConverter.toDayBudget(nowDistributedAmount, currentDay, status, closingStatus, monthBudget));
 
             dayBudget.setStatus(status);
             dayBudget.setDayBudget(nowDistributedAmount);
@@ -198,8 +201,6 @@ public class MonthBudgetService {
         return Math.round(monthUsedAmountPercent*1000000)/1000000.0;
     }
 
-    //저번 달의 monthBudget이 없다면 생성해야해서 Transactional
-    @Transactional
     public List<DayBudget> getWeekBudget(Long memberId) {
         LocalDate today = LocalDate.now();
 
@@ -216,45 +217,50 @@ public class MonthBudgetService {
 
         //이번 주 월요일 구하기
         int firstDayOfWeek = today.getDayOfMonth() - dayInWeek;
-        System.out.println("시작 날짜: " + firstDayOfWeek);
+
         //남은 일수의 dayBudget 구하기
         List<DayBudget> dayBudgets = new ArrayList<>();
 
-        //이번주에 저번달이 포함되어 있다면 저번 달의 monthBudget 생성.
-        //더 좋은 로직이 있는 지 고민..
+        //이번주에 저번달이 포함되어 있다면 저번 달의 monthBudget 가져옴
+        //저번 달의 monthBudget 없으면 dayBudget에 null 채우기
         Integer daysInLastMonth = 0;
         Integer newYear = 0;
         Integer newMonth = 0;
 
         if(firstDayOfWeek < 1) {
-            //헌재 1월이라면 작년 12월의 monthBudget 생성
+            //헌재 1월이라면 작년 12월의 monthBudget
             if(monthBudget.getMonth() == 1) {
-                createDayBudgetsWithMonth(memberId, today.getYear()-1, 12, 0L);
                 daysInLastMonth = YearMonth.of(today.getYear()-1, 12).lengthOfMonth();
                 newYear = today.getYear() - 1;
                 newMonth = 12;
             }
-            //아니라면 저번달의 monthBudget 생성
+            //아니라면 저번달의 monthBudget
             else {
-                createDayBudgetsWithMonth(memberId, today.getYear(), monthBudget.getMonth()-1, 0L);
                 daysInLastMonth = YearMonth.of(today.getYear(), monthBudget.getMonth()-1).lengthOfMonth();
                 newYear = today.getYear();
                 newMonth = monthBudget.getMonth()-1;
             }
 
-            //지난달 monthBudget 찾기
+            //지난달 monthBudget 찾기(없으면 null)
             MonthBudget lastMonthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, newYear, newMonth)
-                    .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.MONTH_BUDGET_NOT_FOUND));
+                    .orElseGet(() -> null);
 
             //dayBudget 찾기
             for(int i=0; i< 7; i++){
                 int plusDay = i;
-                //저번달 날짜라면 저번달 monthBudget에서 찾기
                 if(firstDayOfWeek + i < 1) {
                     plusDay += daysInLastMonth;
-                    DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(lastMonthBudget, firstDayOfWeek + plusDay)
-                            .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
-                    dayBudgets.add(dayBudget);
+                    //저번달 날짜고 lastMonthBudget이 없다면 null 저장
+                    if(lastMonthBudget == null) {
+                        DayBudget dayBudget = null;
+                        dayBudgets.add(dayBudget);
+                    }
+                    //저번달 날짜고 lastMonthBudget이 있다면 lastMonthBudget의 dayBudget 저장
+                    else {
+                        DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(lastMonthBudget, firstDayOfWeek + plusDay)
+                                .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
+                        dayBudgets.add(dayBudget);
+                    }
                 }
                 //이번달 날짜라면 이번달 monthBudget에서 찾기
                 else {
