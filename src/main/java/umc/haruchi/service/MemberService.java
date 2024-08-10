@@ -1,9 +1,11 @@
 package umc.haruchi.service;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.mail.Message;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.With;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -223,38 +225,64 @@ public class MemberService {
 //                .build();
 //    }
 
-    // 로그아웃 (액세스 토큰 블랙리스트에 저장)
-    public void logout(String accessToken, String refreshToken, String type) {
-
+    // 새 로그아웃; 토큰 블랙리스트화(만료 시간 X) + refresh token 삭제 X
+    public void newLogout(String accessToken) {
         try {
             jwtUtil.validateToken(accessToken);
-        } catch (JwtExceptionHandler e) {
+        } catch (JwtException e) {
             throw new JwtExceptionHandler(ErrorStatus.NOT_VALID_TOKEN.getMessage());
         }
 
-        String email = jwtUtil.getEmail(accessToken);
-
-        if (redisTemplate.opsForValue().get("RT" + email) != null) {
-            redisTemplate.delete("RT" + email);
-        }
-
-        Long expiration = JwtUtil.getExpiration(accessToken);
-        redisTemplate.opsForValue().set(accessToken, "logout", expiration, TimeUnit.MILLISECONDS);
-
-        if (type.equals("DELETE")) {
-            Member member = memberRepository.findByEmail(email)
-                    .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
-            memberRepository.delete(member);
-        }
+        redisTemplate.opsForValue().set(accessToken, "logout");
     }
 
-    // 회원 즉시 탈퇴 - 이유 저장
-    public void withdrawer(String reason) {
+    // 기존 로그아웃 - 액세스 토큰 블랙리스트에 저장 (보안 강화 시 주석 처리 해제)
+//    public void logout(String accessToken, String refreshToken, String type) {
+//
+//        try {
+//            jwtUtil.validateToken(accessToken);
+//        } catch (JwtExceptionHandler e) {
+//            throw new JwtExceptionHandler(ErrorStatus.NOT_VALID_TOKEN.getMessage());
+//        }
+//
+//        String email = jwtUtil.getEmail(accessToken);
+//
+//        if (redisTemplate.opsForValue().get("RT" + email) != null) {
+//            redisTemplate.delete("RT" + email);
+//        }
+//
+//        Long expiration = JwtUtil.getExpiration(accessToken);
+//        redisTemplate.opsForValue().set(accessToken, "logout", expiration, TimeUnit.MILLISECONDS);
+//
+//        if (type.equals("DELETE")) {
+//            Member member = memberRepository.findByEmail(email)
+//                    .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
+//            memberRepository.delete(member);
+//        }
+//    }
+
+    // 새 회원 탈퇴 - 이유 저장 + 회원 정보 영구 삭제
+    public void newWithdrawer(String reason, Member member) {
         Withdrawer withdrawer = Withdrawer.builder()
                 .reason(reason)
                 .build();
         withdrawerRepository.save(withdrawer);
+
+        if (memberRepository.findByEmail(member.getEmail()).isPresent()) {
+            memberRepository.delete(member);
+        }
+        else {
+            throw new MemberHandler(ErrorStatus.NO_MEMBER_EXIST);
+        }
     }
+
+    // 기존 회원 탈퇴 - 이유 저장 (보안 강화 시 주석 처리 해제)
+//    public void withdrawer(String reason) {
+//        Withdrawer withdrawer = Withdrawer.builder()
+//                .reason(reason)
+//                .build();
+//        withdrawerRepository.save(withdrawer);
+//    }
 
 
     // 회원 더보기 정보(가입일, 가입 이메일, 닉네임) 조회

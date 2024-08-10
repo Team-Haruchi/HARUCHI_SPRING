@@ -72,7 +72,8 @@ public class MemberApiController {
         return ApiResponse.onSuccess(null);
     }
 
-//    @PostMapping("/login") // 보안 강화 시 주석 처리 해제
+    // 보안 강화 시 주석 처리 해제
+//    @PostMapping("/login")
 //    @Operation(summary = "로그인 API", description = "로그인을 진행하는 API (토큰 발급) (액세스 토큰 필요 없음)")
 //    public ApiResponse<MemberResponseDTO.LoginJwtTokenDTO> login(@Valid @RequestBody MemberRequestDTO.MemberLoginDTO request) {
 //        MemberResponseDTO.LoginJwtTokenDTO token = memberService.login(request);
@@ -91,7 +92,8 @@ public class MemberApiController {
         return "login user";
     }
 
-//    @PostMapping("/refresh") // 보안 강화 시 주석 처리 해제
+    // 보안 강화 시 주석 처리 해제
+//    @PostMapping("/refresh")
 //    @Operation(summary = "액세스 토큰과 리프레시 토큰 재발급 API", description = "리프레시 토큰으로 액세스 토큰과 리프레시 토큰을 재발급하는 API  (액세스 토큰 필요 없음)")
 //    @Parameters({
 //            @Parameter(name = "refreshToken", description = "리프레시 토큰")
@@ -103,23 +105,42 @@ public class MemberApiController {
 
     @PostMapping("/logout")
     @Operation(summary = "로그아웃 API", description = "로그아웃을 진행하는 API (토큰 만료 및 블랙리스트화)")
-    @Parameters({
-            @Parameter(name = "accessToken", description = "액세스 토큰"),
-            @Parameter(name = "refreshToken", description = "리프레시 토큰")
-    })
-    public ApiResponse<MemberResponseDTO> logout(@RequestParam("accessToken") String accessToken,
-                                                 @RequestParam("refreshToken") String refreshToken) {
-        memberService.logout(accessToken, refreshToken, "LOGOUT");
+    public ApiResponse<MemberResponseDTO> logout(@RequestHeader("Authorization") String accessToken) {
+        memberService.newLogout(accessToken.substring(7));
         return ApiResponse.onSuccess(null);
     }
 
+    // 보안 강화 시 주석 처리 해제
+//    @PostMapping("/logout")
+//    @Operation(summary = "로그아웃 API", description = "로그아웃을 진행하는 API (토큰 만료 및 블랙리스트화)")
+//    @Parameters({
+//            @Parameter(name = "accessToken", description = "액세스 토큰"),
+//            @Parameter(name = "refreshToken", description = "리프레시 토큰")
+//    })
+//    public ApiResponse<MemberResponseDTO> logout(@RequestParam("accessToken") String accessToken,
+//                                                 @RequestParam("refreshToken") String refreshToken) {
+//        memberService.logout(accessToken, refreshToken, "LOGOUT");
+//        return ApiResponse.onSuccess(null);
+//    }
+
     @PostMapping("/delete")
     @Operation(summary = "회원탈퇴 API", description = "회원탈퇴를 진행하는 API (토큰 만료 및 회원 영구 삭제)")
-    public ApiResponse<MemberResponseDTO> deleteMember(@Valid @RequestBody MemberRequestDTO.MemberWithdrawRequestDTO request) {
-        memberService.logout(request.getAccessToken(), request.getRefreshToken(), "DELETE");
-        memberService.withdrawer(request.getReason());
+    public ApiResponse<MemberResponseDTO> deleteMember(@RequestHeader("Authorization") String accessToken,
+                                                       @RequestParam String reason,
+                                                       @AuthenticationPrincipal Member member) {
+        memberService.newLogout(accessToken.substring(7));
+        memberService.newWithdrawer(reason,member);
         return ApiResponse.onSuccess(null);
     }
+
+    // 보안 강화 시 주석 처리 해제
+//    @PostMapping("/delete")
+//    @Operation(summary = "회원탈퇴 API", description = "회원탈퇴를 진행하는 API (토큰 만료 및 회원 영구 삭제)")
+//    public ApiResponse<MemberResponseDTO> deleteMember(@Valid @RequestBody MemberRequestDTO.MemberWithdrawRequestDTO request) {
+//        memberService.logout(request.getAccessToken(), request.getRefreshToken(), "DELETE");
+//        memberService.withdrawer(request.getReason());
+//        return ApiResponse.onSuccess(null);
+//    }
 
     @GetMapping("/")
     @Operation(summary = "회원정보조회 API", description = "헤더에 있는 토큰으로 회원을 식별하고, 더보기 화면에서 회원의 정보를 조회하는 API")
