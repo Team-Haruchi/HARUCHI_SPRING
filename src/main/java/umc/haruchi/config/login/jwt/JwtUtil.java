@@ -128,6 +128,19 @@ public class JwtUtil implements InitializingBean {
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
+    public static String createNewAccessJwt(Long memberId, String email, String role) {
+        return Jwts.builder()
+                .header()
+                .add("typ", "JWT")
+                .and()
+                .claim("memberId", memberId)
+                .claim("email", email)
+                .claim("role", role)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .signWith(secretKey)
+                .compact();
+    }
+
     public static String createRefreshJwt(Long memberId, String email, String role) {
         return Jwts.builder()
                 .header()

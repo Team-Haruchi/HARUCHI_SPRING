@@ -141,34 +141,53 @@ public class MemberService {
         }
     }
 
-    // 로그인 (access token 발급)
-    public MemberResponseDTO.LoginJwtTokenDTO login(MemberRequestDTO.MemberLoginDTO loginDto) {
-        String email = loginDto.getEmail();
+    // 새 로그인 (access token 발급; 만료 시간 없음)
+    public MemberResponseDTO.NewLoginJwtTokenDTO newLogin(MemberRequestDTO.MemberLoginDTO loginDTO) {
+        String email = loginDTO.getEmail();
 
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
 
-        if (!passwordEncoder.matches(loginDto.getPassword(), member.getPassword())) {
+        if (!passwordEncoder.matches(loginDTO.getPassword(), member.getPassword())) {
             throw new MemberHandler(ErrorStatus.PASSWORD_NOT_MATCH);
         }
 
-        // 30일 이상 미접속 시 로그아웃 되도록 토큰 유효시간을 수정
-        String accessToken = JwtUtil.createAccessJwt(member.getId(), member.getEmail(), null);
-        String refreshToken = JwtUtil.createRefreshJwt(member.getId(), member.getEmail(), null);
+        String accessToken = JwtUtil.createNewAccessJwt(member.getId(), member.getEmail(), null);
 
-        Long accessExpiredAt = JwtUtil.getExpiration(accessToken);
-        Long refreshExpiredAt = JwtUtil.getExpiration(refreshToken);
-
-        redisTemplate.opsForValue().set("RT" +  email, refreshToken, refreshExpiredAt, TimeUnit.MILLISECONDS);
-
-        return MemberResponseDTO.LoginJwtTokenDTO.builder()
+        return MemberResponseDTO.NewLoginJwtTokenDTO.builder()
                 .grantType("Bearer")
-                .refreshToken(refreshToken)
                 .accessToken(accessToken)
-                .accessTokenExpiresAt(accessExpiredAt)
-                .refreshTokenExpirationAt(refreshExpiredAt)
                 .build();
     }
+
+    // 기존 로그인 (access token과 refresh token 발급; 각각 만료 시간 존재)
+//    public MemberResponseDTO.LoginJwtTokenDTO login(MemberRequestDTO.MemberLoginDTO loginDto) {
+//        String email = loginDto.getEmail();
+//
+//        Member member = memberRepository.findByEmail(email)
+//                .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
+//
+//        if (!passwordEncoder.matches(loginDto.getPassword(), member.getPassword())) {
+//            throw new MemberHandler(ErrorStatus.PASSWORD_NOT_MATCH);
+//        }
+//
+//        // 30일 이상 미접속 시 로그아웃 되도록 토큰 유효시간을 수정
+//        String accessToken = JwtUtil.createAccessJwt(member.getId(), member.getEmail(), null);
+//        String refreshToken = JwtUtil.createRefreshJwt(member.getId(), member.getEmail(), null);
+//
+//        Long accessExpiredAt = JwtUtil.getExpiration(accessToken);
+//        Long refreshExpiredAt = JwtUtil.getExpiration(refreshToken);
+//
+//        redisTemplate.opsForValue().set("RT" +  email, refreshToken, refreshExpiredAt, TimeUnit.MILLISECONDS);
+//
+//        return MemberResponseDTO.LoginJwtTokenDTO.builder()
+//                .grantType("Bearer")
+//                .refreshToken(refreshToken)
+//                .accessToken(accessToken)
+//                .accessTokenExpiresAt(accessExpiredAt)
+//                .refreshTokenExpirationAt(refreshExpiredAt)
+//                .build();
+//    }
 
     // 토큰 재발급 (보안 강화 시 주석 처리 해제)
 //    public MemberResponseDTO.LoginJwtTokenDTO reissue(String refreshToken) {

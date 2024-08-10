@@ -72,10 +72,17 @@ public class MemberApiController {
         return ApiResponse.onSuccess(null);
     }
 
+//    @PostMapping("/login") // 보안 강화 시 주석 처리 해제
+//    @Operation(summary = "로그인 API", description = "로그인을 진행하는 API (토큰 발급) (액세스 토큰 필요 없음)")
+//    public ApiResponse<MemberResponseDTO.LoginJwtTokenDTO> login(@Valid @RequestBody MemberRequestDTO.MemberLoginDTO request) {
+//        MemberResponseDTO.LoginJwtTokenDTO token = memberService.login(request);
+//        return ApiResponse.onSuccess(token);
+//    }
+
     @PostMapping("/login")
-    @Operation(summary = "로그인 API", description = "로그인을 진행하는 API (토큰 발급) (액세스 토큰 필요 없음)")
-    public ApiResponse<MemberResponseDTO.LoginJwtTokenDTO> login(@Valid @RequestBody MemberRequestDTO.MemberLoginDTO request) {
-        MemberResponseDTO.LoginJwtTokenDTO token = memberService.login(request);
+    @Operation(summary = "로그인 API", description = "로그인을 진행하는 API (토큰 방급; 액세스 토큰 필요 없음)")
+    public ApiResponse<MemberResponseDTO.NewLoginJwtTokenDTO> login(@Valid @RequestBody MemberRequestDTO.MemberLoginDTO request) {
+        MemberResponseDTO.NewLoginJwtTokenDTO token = memberService.newLogin(request);
         return ApiResponse.onSuccess(token);
     }
 
