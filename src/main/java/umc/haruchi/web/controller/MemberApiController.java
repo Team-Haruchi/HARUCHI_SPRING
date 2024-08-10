@@ -126,10 +126,9 @@ public class MemberApiController {
     @PostMapping("/delete")
     @Operation(summary = "회원탈퇴 API", description = "회원탈퇴를 진행하는 API (토큰 만료 및 회원 영구 삭제)")
     public ApiResponse<MemberResponseDTO> deleteMember(@RequestHeader("Authorization") String accessToken,
-                                                       @RequestParam String reason,
-                                                       @AuthenticationPrincipal Member member) {
+                                                       @RequestParam String reason) {
+        memberService.newWithdrawer(reason,accessToken.substring(7));
         memberService.newLogout(accessToken.substring(7));
-        memberService.newWithdrawer(reason,member);
         return ApiResponse.onSuccess(null);
     }
 

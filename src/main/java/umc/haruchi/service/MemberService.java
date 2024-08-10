@@ -262,18 +262,18 @@ public class MemberService {
 //    }
 
     // 새 회원 탈퇴 - 이유 저장 + 회원 정보 영구 삭제
-    public void newWithdrawer(String reason, Member member) {
+    public void newWithdrawer(String reason, String accessToken) {
         Withdrawer withdrawer = Withdrawer.builder()
                 .reason(reason)
                 .build();
         withdrawerRepository.save(withdrawer);
 
-        if (memberRepository.findByEmail(member.getEmail()).isPresent()) {
-            memberRepository.delete(member);
-        }
-        else {
-            throw new MemberHandler(ErrorStatus.NO_MEMBER_EXIST);
-        }
+        String email = jwtUtil.getEmail(accessToken);
+
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
+
+        memberRepository.delete(member);
     }
 
     // 기존 회원 탈퇴 - 이유 저장 (보안 강화 시 주석 처리 해제)
