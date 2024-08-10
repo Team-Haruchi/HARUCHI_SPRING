@@ -85,7 +85,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((request) -> request
                         .requestMatchers("/member/signup/**").permitAll()
                         .requestMatchers("/member/login").permitAll()
-                        .requestMatchers("/member/refresh").permitAll()
+//                        .requestMatchers("/member/refresh").permitAll() // 보안 강화 시 주석 처리 해제
                         .requestMatchers("/health").permitAll()  // health check
                         .requestMatchers(AUTH_WHITELIST).permitAll()
                         .anyRequest().authenticated())

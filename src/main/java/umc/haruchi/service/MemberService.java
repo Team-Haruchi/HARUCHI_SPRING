@@ -170,39 +170,39 @@ public class MemberService {
                 .build();
     }
 
-    // 토큰 재발급
-    public MemberResponseDTO.LoginJwtTokenDTO reissue(String refreshToken) {
-
-        if (!jwtUtil.validateToken(refreshToken)) {
-            throw new JwtExceptionHandler(ErrorStatus.NOT_VALID_TOKEN.getMessage());
-        }
-
-        String email = jwtUtil.getEmail(refreshToken);
-
-        Object o = redisTemplate.opsForValue().get("RT" + email);
-        if (o == null) {
-            throw new JwtExceptionHandler(ErrorStatus.NO_MATCH_REFRESHTOKEN.getMessage());
-        }
-
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
-
-        String newAccessToken = JwtUtil.createAccessJwt(member.getId(), member.getEmail(), null);
-        String newRefreshToken = JwtUtil.createRefreshJwt(member.getId(), member.getEmail(), null);
-
-        Long accessExpiredAt = JwtUtil.getExpiration(newAccessToken);
-        Long refreshExpiredAt = JwtUtil.getExpiration(newRefreshToken);
-
-        redisTemplate.opsForValue().set("RT" + member.getEmail(), newRefreshToken, refreshExpiredAt, TimeUnit.MILLISECONDS);
-
-        return MemberResponseDTO.LoginJwtTokenDTO.builder()
-                .grantType("Bearer")
-                .accessToken(newAccessToken)
-                .accessTokenExpiresAt(accessExpiredAt)
-                .refreshToken(newRefreshToken)
-                .refreshTokenExpirationAt(refreshExpiredAt)
-                .build();
-    }
+    // 토큰 재발급 (보안 강화 시 주석 처리 해제)
+//    public MemberResponseDTO.LoginJwtTokenDTO reissue(String refreshToken) {
+//
+//        if (!jwtUtil.validateToken(refreshToken)) {
+//            throw new JwtExceptionHandler(ErrorStatus.NOT_VALID_TOKEN.getMessage());
+//        }
+//
+//        String email = jwtUtil.getEmail(refreshToken);
+//
+//        Object o = redisTemplate.opsForValue().get("RT" + email);
+//        if (o == null) {
+//            throw new JwtExceptionHandler(ErrorStatus.NO_MATCH_REFRESHTOKEN.getMessage());
+//        }
+//
+//        Member member = memberRepository.findByEmail(email)
+//                .orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
+//
+//        String newAccessToken = JwtUtil.createAccessJwt(member.getId(), member.getEmail(), null);
+//        String newRefreshToken = JwtUtil.createRefreshJwt(member.getId(), member.getEmail(), null);
+//
+//        Long accessExpiredAt = JwtUtil.getExpiration(newAccessToken);
+//        Long refreshExpiredAt = JwtUtil.getExpiration(newRefreshToken);
+//
+//        redisTemplate.opsForValue().set("RT" + member.getEmail(), newRefreshToken, refreshExpiredAt, TimeUnit.MILLISECONDS);
+//
+//        return MemberResponseDTO.LoginJwtTokenDTO.builder()
+//                .grantType("Bearer")
+//                .accessToken(newAccessToken)
+//                .accessTokenExpiresAt(accessExpiredAt)
+//                .refreshToken(newRefreshToken)
+//                .refreshTokenExpirationAt(refreshExpiredAt)
+//                .build();
+//    }
 
     // 로그아웃 (액세스 토큰 블랙리스트에 저장)
     public void logout(String accessToken, String refreshToken, String type) {
