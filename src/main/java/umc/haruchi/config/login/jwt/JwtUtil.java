@@ -141,33 +141,34 @@ public class JwtUtil implements InitializingBean {
                 .compact();
     }
 
-    public static String createRefreshJwt(Long memberId, String email, String role) {
-        return Jwts.builder()
-                .header()
-                .add("typ", "JWT")
-                .and()
-                .claim("memberId", memberId)
-                .claim("email", email)
-                .claim("role", role)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + refreshExpireMs))
-                .signWith(secretKey)
-                .compact();
-    }
-
-    public static String createAccessJwt(Long memberId, String email, String role) {
-        return Jwts.builder()
-                .header()
-                .add("typ", "JWT")
-                .and()
-                .claim("memberId", memberId)
-                .claim("email", email)
-                .claim("role", role)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + accessExpireMs))
-                .signWith(secretKey)
-                .compact();
-    }
+    // 기존 토큰 발급 기능 - 보안 강화 시 주석 처리 해제
+//    public static String createRefreshJwt(Long memberId, String email, String role) {
+//        return Jwts.builder()
+//                .header()
+//                .add("typ", "JWT")
+//                .and()
+//                .claim("memberId", memberId)
+//                .claim("email", email)
+//                .claim("role", role)
+//                .issuedAt(new Date(System.currentTimeMillis()))
+//                .expiration(new Date(System.currentTimeMillis() + refreshExpireMs))
+//                .signWith(secretKey)
+//                .compact();
+//    }
+//
+//    public static String createAccessJwt(Long memberId, String email, String role) {
+//        return Jwts.builder()
+//                .header()
+//                .add("typ", "JWT")
+//                .and()
+//                .claim("memberId", memberId)
+//                .claim("email", email)
+//                .claim("role", role)
+//                .issuedAt(new Date(System.currentTimeMillis()))
+//                .expiration(new Date(System.currentTimeMillis() + accessExpireMs))
+//                .signWith(secretKey)
+//                .compact();
+//    }
 
     public static String getPassword(String token) {
         return Jwts.parser()
