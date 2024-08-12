@@ -32,17 +32,16 @@ public class BudgetRedistributionService {
     private final IncomeRepository incomeRepository;
     private final ExpenditureRepository expenditureRepository;
 
-    LocalDate now = LocalDate.now(); // 현재 날짜 가져오기
-    int year = now.getYear();
-    int month = now.getMonthValue(); // 현재 월 가져오기
-    int day = now.getDayOfMonth();   // 현재 일 가져오기
-
     //넘기기
     @Transactional
     public PushPlusClosing push(BudgetRedistributionRequestDTO.createPushDTO request, Long memberId) {
+        LocalDate now = LocalDate.now(); // 현재 날짜 가져오기
+        int localNowYear = now.getYear();
+        int localNowMonth = now.getMonthValue(); // 현재 월 가져오기
+        int localNowDay = now.getDayOfMonth();   // 현재 일 가져오기
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(NO_MEMBER_EXIST)); //영속화
-        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), year, month)
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), localNowYear, localNowMonth)
                 .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
         DayBudget sourceBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getSourceDay())
                 .orElseThrow(() -> new DayBudgetHandler(NOT_DAY_BUDGET));
@@ -60,7 +59,7 @@ public class BudgetRedistributionService {
 
         //이번 달 남은 일 수 알아내기(본인 제외)
         long dayCount = monthBudget.getDayBudgetList().stream()
-                .filter(dayBudget -> dayBudget.getDay() >= day).count() - 1;
+                .filter(dayBudget -> dayBudget.getDay() >= localNowDay).count() - 1;
 
         //고르게 넘기기(233원씩 넘겨준다고하면 200원씩 분배하고 33원씩 * 일수 -> 세이프박스, 금액 차감된 source도 다시 확인 후 절사)
         if (request.getRedistributionOption().equals(EVENLY)) {
@@ -89,14 +88,14 @@ public class BudgetRedistributionService {
 
             // 각 DayBudget에 분배
             monthBudget.getDayBudgetList().stream()
-                    .filter(dayBudget -> dayBudget.getDay() >= day && !dayBudget.getDay().equals(sourceDay))
+                    .filter(dayBudget -> dayBudget.getDay() >= localNowDay && !dayBudget.getDay().equals(sourceDay))
                     .forEach(dayBudget -> {
                         dayBudget.pushAmount(distributedAmount);
                     });
 
             // 세이프박스에 넣을 금액(전체금액 - 분배된 총 금액, 음수에서 양수가 된 값들 절사해서 넣어줌
             long safeBoxAmount = totalAmount - distributedAmount * dayCount + sourceBudget.getDayBudget() % 100 + monthBudget.getDayBudgetList().stream()
-                    .filter(dayBudget -> dayBudget.getDay() >= day && !dayBudget.getDay().equals(sourceDay))
+                    .filter(dayBudget -> dayBudget.getDay() >= localNowDay && !dayBudget.getDay().equals(sourceDay))
                     .mapToLong(dayBudget -> {
                         if (dayBudget.getDayBudget() > 0) {
                             return dayBudget.getDayBudget() % 100;
@@ -109,7 +108,7 @@ public class BudgetRedistributionService {
 
             // 절사한 값 반영
             monthBudget.getDayBudgetList().stream()
-                    .filter(dayBudget -> dayBudget.getDay() >= day && !dayBudget.getDay().equals(sourceDay))
+                    .filter(dayBudget -> dayBudget.getDay() >= localNowDay && !dayBudget.getDay().equals(sourceDay))
                     .forEach(dayBudget -> {
                         if (dayBudget.getDayBudget() > 0) {
                             dayBudget.subAmount(dayBudget.getDayBudget() % 100);
@@ -173,11 +172,15 @@ public class BudgetRedistributionService {
     //당겨쓰기
     @Transactional
     public PullMinusClosing pull(BudgetRedistributionRequestDTO.createPullDTO request, Long memberId) {
+        LocalDate now = LocalDate.now(); // 현재 날짜 가져오기
+        int localNowYear = now.getYear();
+        int localNowMonth = now.getMonthValue(); // 현재 월 가져오기
+        int localNowDay = now.getDayOfMonth();   // 현재 일 가져오기
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberHandler(NO_MEMBER_EXIST)); //영속화
 
-        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), year, month)
+        MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(member.getId(), localNowYear, localNowMonth)
                 .orElseThrow(() -> new MonthBudgetHandler(MONTH_BUDGET_NOT_FOUND));
 
         DayBudget targetBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, request.getTargetDay())
@@ -202,7 +205,7 @@ public class BudgetRedistributionService {
         }
         //이번 달 남은 일 수 알아내기
         long dayCount = monthBudget.getDayBudgetList().stream()
-                .filter(dayBudget -> dayBudget.getDay() >= day).count() - 1;
+                .filter(dayBudget -> dayBudget.getDay() >= localNowDay).count() - 1;
 
         //고르게 당겨쓰기(233원씩 당겨온다고하면 200 * 일수 당겨와서 target에 저장, 233원씩 차감, 67원씩 세이프박스로))
         if (request.getRedistributionOption().equals(EVENLY)) {
@@ -229,7 +232,7 @@ public class BudgetRedistributionService {
 
             // 각 DayBudget에서 빼기
             monthBudget.getDayBudgetList().stream()
-                    .filter(dayBudget -> dayBudget.getDay() >= day && !dayBudget.getDay().equals(targetDay))
+                    .filter(dayBudget -> dayBudget.getDay() >= localNowDay && !dayBudget.getDay().equals(targetDay))
                     .forEach(dayBudget -> {
                         if(dayBudget.getDayBudget() < splitAmount) {
                             throw new BudgetRedistributionHandler(LACK_OF_MONEY);
@@ -240,7 +243,7 @@ public class BudgetRedistributionService {
             //33원 * 일 수 + 딱 떨어지지 않았을 때의 값(totalAmount - splitAmount * dayCount) + target day가 음수에서 양수로 변했을 때의 값 -> 세이프박스
             long safeBoxAmount = (splitAmount - distributedAmount) * dayCount + (totalAmount - splitAmount * dayCount) +
                     monthBudget.getDayBudgetList().stream()
-                    .filter(dayBudget -> dayBudget.getDay() >= day && !dayBudget.getDay().equals(targetDay))
+                    .filter(dayBudget -> dayBudget.getDay() >= localNowDay && !dayBudget.getDay().equals(targetDay))
                     .mapToLong(dayBudget -> {
                         if (dayBudget.getDayBudget() > 0) {
                             return dayBudget.getDayBudget() % 100;
@@ -251,7 +254,7 @@ public class BudgetRedistributionService {
 
             // sourceBudget에서 10 단위 이하 금액 절사 * 양수일 때 *
             monthBudget.getDayBudgetList().stream()
-                    .filter(dayBudget -> dayBudget.getDay() >= day && !dayBudget.getDay().equals(targetDay))
+                    .filter(dayBudget -> dayBudget.getDay() >= localNowDay && !dayBudget.getDay().equals(targetDay))
                     .forEach(dayBudget -> {
                         if (dayBudget.getDayBudget() > 0) {
                             dayBudget.subAmount(dayBudget.getDayBudget() % 100);
