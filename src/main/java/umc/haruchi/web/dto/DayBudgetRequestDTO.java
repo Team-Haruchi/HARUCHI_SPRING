@@ -18,7 +18,7 @@ public class DayBudgetRequestDTO {
         Long incomeAmount;
 
         @NotNull(message = "수입 카테고리는 필수 입력 값입니다.")
-        IncomeCategory category;
+        String category;
 
     }
 
@@ -29,6 +29,6 @@ public class DayBudgetRequestDTO {
         Long expenditureAmount;
 
         @NotNull(message = "지출 카테고리은 필수 입력 값입니다.")
-        ExpenditureCategory category;
+        String category;
     }
 }

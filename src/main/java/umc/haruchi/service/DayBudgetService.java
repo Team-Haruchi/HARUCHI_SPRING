@@ -1,6 +1,7 @@
 package umc.haruchi.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,35 +23,29 @@ import java.util.List;
 
 import static umc.haruchi.apiPayload.code.status.ErrorStatus.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DayBudgetService {
 
-    @Autowired
-    private MonthBudgetRepository monthBudgetRepository;
+    private final MonthBudgetRepository monthBudgetRepository;
 
-    @Autowired
-    private DayBudgetRepository dayBudgetRepository;
+    private final DayBudgetRepository dayBudgetRepository;
 
-    @Autowired
-    private MemberRepository memberRepository;
+    private final MemberRepository memberRepository;
 
-    @Autowired
-    private IncomeRepository incomeRepository;
+    private final IncomeRepository incomeRepository;
 
-    @Autowired
-    private ExpenditureRepository expenditureRepository;
+    private final ExpenditureRepository expenditureRepository;
 
-    @Autowired
-    private MonthBudgetService monthBudgetService;
+    private final MonthBudgetService monthBudgetService;
 
-    LocalDate now = LocalDate.now();
-    int year = now.getYear();
-    int month = now.getMonthValue();
-    int day = now.getDayOfMonth();
-    int lastDay = now.lengthOfMonth();
+
 
     public MonthBudget check(Long memberId){
+        LocalDate now = LocalDate.now();
+        int year = now.getYear();
+        int month = now.getMonthValue();
 
         if(memberRepository.findById(memberId).isEmpty()){
             throw new MemberHandler(ErrorStatus.NO_MEMBER_EXIST);
@@ -65,6 +60,9 @@ public class DayBudgetService {
     }
 
     public Integer findDayBudget(Long memberId) {
+        LocalDate now = LocalDate.now();
+        int day = now.getDayOfMonth();
+
         MonthBudget monthBudget = check(memberId);
 
         DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
@@ -74,6 +72,11 @@ public class DayBudgetService {
     }
 
     public List<Integer> findAllBudget(Long memberId) {
+        LocalDate now = LocalDate.now();
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        int day = now.getDayOfMonth();
+        int lastDay = now.lengthOfMonth();
 
         MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month)
                 .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.NOT_DAY_BUDGET));
@@ -87,6 +90,7 @@ public class DayBudgetService {
             DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, i)
                     .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
             allBudget.add(dayBudget.getDayBudget());
+
         }
 
         return allBudget;
@@ -95,6 +99,9 @@ public class DayBudgetService {
 
     @Transactional
     public void deleteIncome(Long memberId, Long incomeId) {
+        LocalDate now = LocalDate.now();
+        int day = now.getDayOfMonth();
+
         MonthBudget monthBudget = check(memberId);
 
         DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
@@ -117,6 +124,8 @@ public class DayBudgetService {
 
     @Transactional
     public Income joinIncome(DayBudgetRequestDTO.createIncomeDTO request, Long memberId) {
+        LocalDate now = LocalDate.now();
+        int day = now.getDayOfMonth();
 
         MonthBudget monthBudget = check(memberId);
 
@@ -134,6 +143,9 @@ public class DayBudgetService {
 
     @Transactional
     public Expenditure joinExpenditure(DayBudgetRequestDTO.createExpenditureDTO request, Long memberId) {
+        LocalDate now = LocalDate.now();
+        int day = now.getDayOfMonth();
+
         MonthBudget monthBudget = check(memberId);
 
         DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
@@ -162,6 +174,9 @@ public class DayBudgetService {
 
     @Transactional
     public void deleteExpenditure(Long memberId, Long expenditureId) {
+        LocalDate now = LocalDate.now();
+        int day = now.getDayOfMonth();
+
         MonthBudget monthBudget = check(memberId);
 
         DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, day)
