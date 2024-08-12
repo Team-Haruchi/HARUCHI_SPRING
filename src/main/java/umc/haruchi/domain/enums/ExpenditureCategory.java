@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 public enum ExpenditureCategory {
     NONE("미분류"),
     FOOD("식비"),
-    CAFE("카페"),
+    COFFEE("커피"),
     TRANSPORT("교통"),
     HOBBY("취미"),
     FASHION("패션"),

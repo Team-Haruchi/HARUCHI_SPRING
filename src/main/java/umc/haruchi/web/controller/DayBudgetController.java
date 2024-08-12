@@ -24,14 +24,14 @@ public class DayBudgetController {
     private DayBudgetService dayBudgetService;
 
 
-    @Operation(summary = "하루 예산을 조회하는 API", description = "회원의 하루 예산을 조회하는 API 입니다.")
+    @Operation(summary = "하루 예산을 조회하는 API.", description = "회원의 하루 예산을 조회하는 API 입니다.")
     @GetMapping("")
     public ApiResponse<DayBudgetResponseDTO.getDayBudget> getDailyBudget(@AuthenticationPrincipal MemberDetail memberDetail){
         Integer todayBudget = dayBudgetService.findDayBudget(memberDetail.getMember().getId());
         return ApiResponse.onSuccess(DayBudgetConverter.toGetDayBudget(todayBudget));
     }
 
-    @Operation(summary = "날짜별 예산 금액 조회하는 API", description = "오늘부터 말일까지의 예산을 조회하는 API 입니다.")
+    @Operation(summary = "날짜별 예산 금액 조회하는 API.", description = "오늘부터 말일까지의 예산을 조회하는 API 입니다.")
     @GetMapping("/list")
     public ApiResponse<DayBudgetResponseDTO.getBudget> getAllBudget(@AuthenticationPrincipal MemberDetail memberDetail){
         List<Integer> allBudget = dayBudgetService.findAllBudget(memberDetail.getMember().getId());
