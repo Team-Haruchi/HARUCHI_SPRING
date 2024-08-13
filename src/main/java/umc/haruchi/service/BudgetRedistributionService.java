@@ -208,6 +208,7 @@ public class BudgetRedistributionService {
                 .filter(dayBudget -> dayBudget.getDay() >= localNowDay).count() - 1;
 
         //고르게 당겨쓰기(233원씩 당겨온다고하면 200 * 일수 당겨와서 target에 저장, 233원씩 차감, 67원씩 세이프박스로))
+        //0813 수정 : 233 * 일수 당겨와서 target에 저장, 233원씩 차감, 67원씩 세이프박스, source 절사 후 세이프박스
         if (request.getRedistributionOption().equals(EVENLY)) {
 
             //dayCount가 0일때 -> 마지막 날일 때 예외처리
@@ -224,11 +225,8 @@ public class BudgetRedistributionService {
             // 금액 분배 계산
             long splitAmount = totalAmount / dayCount;
 
-            //10의 자리 이하 절사
-            int distributedAmount = (int) (roundDownToNearestHundred(splitAmount));
-
-            // target amount에 더하기
-            targetBudget.pushAmount((int) (distributedAmount * dayCount));
+            // target amount에 더하기 233 * 일수
+            targetBudget.pushAmount((int) (splitAmount * dayCount));
 
             // 각 DayBudget에서 빼기
             monthBudget.getDayBudgetList().stream()
@@ -240,8 +238,8 @@ public class BudgetRedistributionService {
                         dayBudget.subAmount((int) splitAmount); //467,567 다양하게 있을 수 있음
                     });
 
-            //33원 * 일 수 + 딱 떨어지지 않았을 때의 값(totalAmount - splitAmount * dayCount) + target day가 음수에서 양수로 변했을 때의 값 -> 세이프박스
-            long safeBoxAmount = (splitAmount - distributedAmount) * dayCount + (totalAmount - splitAmount * dayCount) +
+            //source day들에서 양수일때만 절사 + target day가 음수에서 양수로 변했을 때의 값 -> 세이프박스
+            long safeBoxAmount =
                     monthBudget.getDayBudgetList().stream()
                     .filter(dayBudget -> dayBudget.getDay() >= localNowDay && !dayBudget.getDay().equals(targetDay))
                     .mapToLong(dayBudget -> {
@@ -252,7 +250,11 @@ public class BudgetRedistributionService {
                     }) // 10 단위 이하
                     .sum();
 
-            // sourceBudget에서 10 단위 이하 금액 절사 * 양수일 때 *
+            if(targetBudget.getDayBudget() > 0) {
+                safeBoxAmount += targetBudget.getDayBudget() % 100;
+            }
+
+            // 각 sourceday에서 양수일 때 10 단위 이하 금액 절사
             monthBudget.getDayBudgetList().stream()
                     .filter(dayBudget -> dayBudget.getDay() >= localNowDay && !dayBudget.getDay().equals(targetDay))
                     .forEach(dayBudget -> {
