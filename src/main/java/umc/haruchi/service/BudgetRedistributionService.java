@@ -207,8 +207,7 @@ public class BudgetRedistributionService {
         long dayCount = monthBudget.getDayBudgetList().stream()
                 .filter(dayBudget -> dayBudget.getDay() >= localNowDay).count() - 1;
 
-        //고르게 당겨쓰기(233원씩 당겨온다고하면 200 * 일수 당겨와서 target에 저장, 233원씩 차감, 67원씩 세이프박스로))
-        //0813 수정 : 233 * 일수 당겨와서 target에 저장, 233원씩 차감, 67원씩 세이프박스, source 절사 후 세이프박스
+        //0813 수정 : 233 * 일수 당겨와서 target에 저장, 233원씩 차감, 67원씩 세이프박스, target 절사 후 세이프박스
         if (request.getRedistributionOption().equals(EVENLY)) {
 
             //dayCount가 0일때 -> 마지막 날일 때 예외처리
