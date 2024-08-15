@@ -20,6 +20,13 @@ public class MemberConverter {
     public static MemberResponseDTO.MemberJoinResultDTO toJoinResultDTO(Member member) {
         return MemberResponseDTO.MemberJoinResultDTO.builder()
                 .memberId(member.getId())
-                .createdAt(LocalDateTime.now()).build();
+                .createdAt(LocalDateTime.now())
+                .build();
+    }
+
+    public static MemberResponseDTO.MemberSafeBoxResultDTO toSafeBoxResultDTO(Long safeBox) {
+        return MemberResponseDTO.MemberSafeBoxResultDTO.builder()
+                .safeBox(safeBox)
+                .build();
     }
 }

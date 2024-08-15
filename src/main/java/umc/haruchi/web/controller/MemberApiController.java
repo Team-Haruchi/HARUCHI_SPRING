@@ -150,7 +150,8 @@ public class MemberApiController {
 
     @GetMapping("/safebox")
     @Operation(summary = "회원 세이프박스 조회 API", description = "헤더에 있는 토큰으로 회원을 식별하고, 회원의 세이프박스 금액 조회하는 API")
-    public ApiResponse<Long> getMemberSafeBox(@AuthenticationPrincipal MemberDetail memberDetail) {
-        return ApiResponse.onSuccess(memberDetail.getMember().getSafeBox());
+    public ApiResponse<MemberResponseDTO.MemberSafeBoxResultDTO> getMemberSafeBox(@AuthenticationPrincipal MemberDetail memberDetail) {
+        Long safeBox = memberDetail.getMember().getSafeBox();
+        return ApiResponse.onSuccess(MemberConverter.toSafeBoxResultDTO(safeBox));
     }
 }
