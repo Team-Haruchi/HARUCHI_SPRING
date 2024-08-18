@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import umc.haruchi.apiPayload.ApiResponse;
 import umc.haruchi.config.login.auth.MemberDetail;
 import umc.haruchi.converter.DayBudgetConverter;
+import umc.haruchi.domain.DayBudget;
 import umc.haruchi.domain.Expenditure;
 import umc.haruchi.domain.Income;
 import umc.haruchi.service.DayBudgetService;
@@ -33,9 +34,9 @@ public class DayBudgetController {
 
     @Operation(summary = "날짜별 예산 금액 조회하는 API.", description = "오늘부터 말일까지의 예산을 조회하는 API 입니다.")
     @GetMapping("/list")
-    public ApiResponse<DayBudgetResponseDTO.getBudget> getAllBudget(@AuthenticationPrincipal MemberDetail memberDetail){
-        List<Integer> allBudget = dayBudgetService.findAllBudget(memberDetail.getMember().getId());
-        return ApiResponse.onSuccess(DayBudgetConverter.toGetBudget(allBudget));
+    public ApiResponse<DayBudgetResponseDTO.getBudgetList> getAllBudget(@AuthenticationPrincipal MemberDetail memberDetail){
+        List<DayBudget> allBudget = dayBudgetService.findAllBudget(memberDetail.getMember().getId());
+        return ApiResponse.onSuccess(DayBudgetConverter.toGetBudgetList(allBudget));
     }
 
     @Operation(summary = "수입 등록 API", description = "하루 수입을 등록하는 API 입니다.")

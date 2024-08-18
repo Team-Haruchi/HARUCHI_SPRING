@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import umc.haruchi.domain.DayBudget;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,8 +24,17 @@ public class DayBudgetResponseDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class getBudget {
-        List<Integer> budget;
+    public static class getBudgetList {
+        List<getBudget> budget;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class getBudget{
+        Long day;
+        Integer dayBudget;
     }
 
     @Builder

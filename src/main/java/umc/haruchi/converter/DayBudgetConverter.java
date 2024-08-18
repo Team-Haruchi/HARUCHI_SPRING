@@ -15,6 +15,7 @@ import umc.haruchi.web.dto.MonthBudgetResponseDTO;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class DayBudgetConverter {
 
@@ -33,10 +34,18 @@ public class DayBudgetConverter {
                 .dayBudget(todayBudget)
                 .build();
     }
-
-    public static DayBudgetResponseDTO.getBudget toGetBudget(List<Integer> allBudget) {
+    public static DayBudgetResponseDTO.getBudget toGetBudget(DayBudget dayBudget) {
         return DayBudgetResponseDTO.getBudget.builder()
-                .budget(allBudget)
+                .day(dayBudget.getDay())
+                .dayBudget(dayBudget.getDayBudget())
+                .build();
+    }
+
+    public static DayBudgetResponseDTO.getBudgetList toGetBudgetList(List<DayBudget> allBudget) {
+        List<DayBudgetResponseDTO.getBudget> getBudgetList = allBudget.stream()
+                .map(DayBudgetConverter::toGetBudget).collect(Collectors.toList());
+        return DayBudgetResponseDTO.getBudgetList.builder()
+                .budget(getBudgetList)
                 .build();
     }
 

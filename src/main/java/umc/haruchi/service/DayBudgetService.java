@@ -71,7 +71,7 @@ public class DayBudgetService {
         return dayBudget.getDayBudget();
     }
 
-    public List<Integer> findAllBudget(Long memberId) {
+    public List<DayBudget> findAllBudget(Long memberId) {
         LocalDate now = LocalDate.now();
         int year = now.getYear();
         int month = now.getMonthValue();
@@ -85,12 +85,11 @@ public class DayBudgetService {
         dayBudgetRepository.saveAll(dayBudgets);
 
 
-        List<Integer> allBudget = new ArrayList<>();
+        List<DayBudget> allBudget = new ArrayList<>();
         for(int i=day; i<=lastDay; i++){
             DayBudget dayBudget = dayBudgetRepository.findByMonthBudgetAndDay(monthBudget, i)
                     .orElseThrow(() -> new DayBudgetHandler(NOT_SOME_DAY_BUDGET));
-            allBudget.add(dayBudget.getDayBudget());
-
+            allBudget.add(dayBudget);
         }
 
         return allBudget;
