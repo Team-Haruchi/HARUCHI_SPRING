@@ -53,9 +53,7 @@ public class DayBudgetService {
 
         MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month)
                 .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.MONTH_BUDGET_NOT_FOUND));
-        if(monthBudget == null){
-            throw new MonthBudgetHandler(ErrorStatus.MONTH_BUDGET_NOT_FOUND);
-        }
+
         return monthBudget;
     }
 
