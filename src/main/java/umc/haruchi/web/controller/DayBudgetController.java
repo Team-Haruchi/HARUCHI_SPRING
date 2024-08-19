@@ -1,6 +1,9 @@
 package umc.haruchi.web.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,6 +29,12 @@ public class DayBudgetController {
 
 
     @Operation(summary = "하루 예산을 조회하는 API.", description = "회원의 하루 예산을 조회하는 API 입니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200",description = "OK, 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MEMBER4005", description = "존재하지 않는 회원입니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MONTHBUDGET4001", description = "한달 예산이 존재하지 않습니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "DAYBUDGET4001", description = "하루예산이 존재하지 않습니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+    })
     @GetMapping("")
     public ApiResponse<DayBudgetResponseDTO.getDayBudget> getDailyBudget(@AuthenticationPrincipal MemberDetail memberDetail){
         Integer todayBudget = dayBudgetService.findDayBudget(memberDetail.getMember().getId());
@@ -33,6 +42,12 @@ public class DayBudgetController {
     }
 
     @Operation(summary = "날짜별 예산 금액 조회하는 API.", description = "오늘부터 말일까지의 예산을 조회하는 API 입니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200",description = "OK, 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MEMBER4005", description = "존재하지 않는 회원입니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MONTHBUDGET4001", description = "한달 예산이 존재하지 않습니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "DAYBUDGET4002", description = "특정 날짜의 예산이 존재하지 않습니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+    })
     @GetMapping("/list")
     public ApiResponse<DayBudgetResponseDTO.getBudgetList> getAllBudget(@AuthenticationPrincipal MemberDetail memberDetail){
         List<DayBudget> allBudget = dayBudgetService.findAllBudget(memberDetail.getMember().getId());
@@ -40,6 +55,12 @@ public class DayBudgetController {
     }
 
     @Operation(summary = "수입 등록 API", description = "하루 수입을 등록하는 API 입니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200",description = "OK, 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MEMBER4005", description = "존재하지 않는 회원입니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MONTHBUDGET4001", description = "한달 예산이 존재하지 않습니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "DAYBUDGET4002", description = "특정 날짜의 예산이 존재하지 않습니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+    })
     @PostMapping("/income")
     public ApiResponse<DayBudgetResponseDTO.incomeReg> createIncome(@Valid @RequestBody DayBudgetRequestDTO.createIncomeDTO request,
                                                                     @AuthenticationPrincipal MemberDetail memberDetail){
@@ -49,6 +70,14 @@ public class DayBudgetController {
     }
 
     @Operation(summary = "수입 삭제 API", description = "기록했던 하루 수입을 삭제하는 API 입니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200",description = "OK, 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MEMBER4005", description = "존재하지 않는 회원입니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MONTHBUDGET4001", description = "한달 예산이 존재하지 않습니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "DAYBUDGET4002", description = "특정 날짜의 예산이 존재하지 않습니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MONTHBUDGET4003", description = "오늘 지출은 마감되었습니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "INCOME4001", description = "해당 수입이 존재하지 않습니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+    })
     @DeleteMapping("/income/{incomeId}")
     public ApiResponse<?> deleteIncome(@PathVariable Long incomeId,
                                        @AuthenticationPrincipal MemberDetail memberDetail){
@@ -57,6 +86,12 @@ public class DayBudgetController {
     }
 
     @Operation(summary = "지출 등록 API", description = "하루 지출을 등록하는 API 입니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200",description = "OK, 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MEMBER4005", description = "존재하지 않는 회원입니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MONTHBUDGET4001", description = "한달 예산이 존재하지 않습니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "DAYBUDGET4002", description = "특정 날짜의 예산이 존재하지 않습니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+    })
     @PostMapping("/expenditure")
     public ApiResponse<DayBudgetResponseDTO.expenditureReg> createExpenditure(@Valid @RequestBody DayBudgetRequestDTO.createExpenditureDTO request,
                                                                               @AuthenticationPrincipal MemberDetail memberDetail){
@@ -65,6 +100,14 @@ public class DayBudgetController {
     }
 
     @Operation(summary = "지출 삭제 API", description = "기록했던 하루 지출을 삭제하는 APi 입니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200",description = "OK, 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MEMBER4005", description = "존재하지 않는 회원입니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MONTHBUDGET4001", description = "한달 예산이 존재하지 않습니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "DAYBUDGET4002", description = "특정 날짜의 예산이 존재하지 않습니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MONTHBUDGET4003", description = "오늘 지출은 마감되었습니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "EXPENDITURE4001", description = "해당 지출이 존재하지 않습니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+    })
     @DeleteMapping("/expenditure/{expenditureId}")
     public ApiResponse<?> deleteExpenditure(@PathVariable Long expenditureId,
                                             @AuthenticationPrincipal MemberDetail memberDetail){
