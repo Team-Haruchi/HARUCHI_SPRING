@@ -51,4 +51,12 @@ public class MemberResponseDTO {
         String email;
         String name;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MemberSafeBoxResultDTO {
+        Long safeBox;
+    }
 }
