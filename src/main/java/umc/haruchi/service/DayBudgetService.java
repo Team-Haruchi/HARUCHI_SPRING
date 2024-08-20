@@ -8,10 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import umc.haruchi.apiPayload.code.status.ErrorStatus;
 import umc.haruchi.apiPayload.exception.handler.*;
 import umc.haruchi.converter.DayBudgetConverter;
-import umc.haruchi.domain.DayBudget;
-import umc.haruchi.domain.Expenditure;
-import umc.haruchi.domain.Income;
-import umc.haruchi.domain.MonthBudget;
+import umc.haruchi.converter.MonthBudgetConverter;
+import umc.haruchi.domain.*;
 import umc.haruchi.domain.enums.DayBudgetStatus;
 import umc.haruchi.repository.*;
 import umc.haruchi.web.dto.DayBudgetRequestDTO;
@@ -20,6 +18,7 @@ import umc.haruchi.web.dto.DayBudgetRequestDTO;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static umc.haruchi.apiPayload.code.status.ErrorStatus.*;
 
@@ -41,7 +40,6 @@ public class DayBudgetService {
     private final MonthBudgetService monthBudgetService;
 
 
-
     public MonthBudget check(Long memberId){
         LocalDate now = LocalDate.now();
         int year = now.getYear();
@@ -59,7 +57,25 @@ public class DayBudgetService {
 
     public Integer findDayBudget(Long memberId) {
         LocalDate now = LocalDate.now();
+        int year = now.getYear();
+        int month = now.getMonthValue();
         int day = now.getDayOfMonth();
+
+
+        MonthBudget nmonthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month).orElse(null);
+        if(nmonthBudget == null){
+            // 컨버터에서 빌드하기
+            Member member = memberRepository.findById(memberId).orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
+            MonthBudget last = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month-1)
+                    .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.NOT_MONTH_BUDGET));
+            MonthBudget newMonthBudget = MonthBudgetConverter.toMonthBudget(year, month, last.getMonthBudget(), member);
+            // 한달 예산 저장
+            monthBudgetRepository.save(newMonthBudget);
+            // 하루 예산 분배
+            List<DayBudget> dayBudgets = monthBudgetService.distributeDayBudgets(memberId);
+            dayBudgetRepository.saveAll(dayBudgets);
+        }
+
 
         MonthBudget monthBudget = check(memberId);
 
@@ -76,12 +92,24 @@ public class DayBudgetService {
         int day = now.getDayOfMonth();
         int lastDay = now.lengthOfMonth();
 
+
+        MonthBudget nmonthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month).orElse(null);
+        if(nmonthBudget == null){
+            // 컨버터에서 빌드하기
+            Member member = memberRepository.findById(memberId).orElseThrow(() -> new MemberHandler(ErrorStatus.NO_MEMBER_EXIST));
+            MonthBudget last = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month-1)
+                    .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.NOT_MONTH_BUDGET));
+            MonthBudget newMonthBudget = MonthBudgetConverter.toMonthBudget(year, month, last.getMonthBudget(), member);
+            // 한달 예산 저장
+            monthBudgetRepository.save(newMonthBudget);
+            // 하루 예산 분배
+            List<DayBudget> dayBudgets = monthBudgetService.distributeDayBudgets(memberId);
+            dayBudgetRepository.saveAll(dayBudgets);
+        }
+
+
         MonthBudget monthBudget = monthBudgetRepository.findByMemberIdAndYearAndMonth(memberId, year, month)
-                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.NOT_DAY_BUDGET));
-
-        List<DayBudget> dayBudgets = monthBudgetService.distributeDayBudgets(memberId);
-        dayBudgetRepository.saveAll(dayBudgets);
-
+                .orElseThrow(() -> new MonthBudgetHandler(ErrorStatus.NOT_MONTH_BUDGET));
 
         List<DayBudget> allBudget = new ArrayList<>();
         for(int i=day; i<=lastDay; i++){

@@ -28,7 +28,7 @@ public class DayBudgetController {
     private DayBudgetService dayBudgetService;
 
 
-    @Operation(summary = "하루 예산을 조회하는 API.", description = "회원의 하루 예산을 조회하는 API 입니다.")
+    @Operation(summary = "하루 예산을 조회하는 API", description = "회원의 하루 예산을 조회하는 API 입니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200",description = "OK, 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MEMBER4005", description = "존재하지 않는 회원입니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
@@ -41,7 +41,7 @@ public class DayBudgetController {
         return ApiResponse.onSuccess(DayBudgetConverter.toGetDayBudget(todayBudget));
     }
 
-    @Operation(summary = "날짜별 예산 금액 조회하는 API.", description = "오늘부터 말일까지의 예산을 조회하는 API 입니다.")
+    @Operation(summary = "날짜별 예산 금액 조회하는 API", description = "오늘부터 말일까지의 예산을 조회하는 API 입니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON200",description = "OK, 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "MEMBER4005", description = "존재하지 않는 회원입니다.",content = @Content(schema = @Schema(implementation = ApiResponse.class))),
