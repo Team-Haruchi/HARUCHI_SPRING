@@ -1,6 +1,7 @@
 package umc.haruchi.converter;
 
 import umc.haruchi.domain.DayBudget;
+import umc.haruchi.domain.Member;
 import umc.haruchi.domain.MonthBudget;
 import umc.haruchi.domain.enums.DayBudgetStatus;
 import umc.haruchi.web.dto.MonthBudgetRequestDTO;
@@ -79,6 +80,15 @@ public class MonthBudgetConverter {
         return MonthBudgetResponseDTO.GetMonthLeftNowResultDTO.builder()
                 .leftDay(leftDay)
                 .leftBudget(leftBudget)
+                .build();
+    }
+
+    public static MonthBudget toMonthBudget(int year, int month, long amount, Member member){
+        return MonthBudget.builder()
+                .year(year)
+                .month(month)
+                .monthBudget(amount)
+                .member(member)
                 .build();
     }
 }
