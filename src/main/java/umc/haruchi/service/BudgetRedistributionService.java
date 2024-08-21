@@ -237,7 +237,7 @@ public class BudgetRedistributionService {
                         dayBudget.subAmount((int) splitAmount); //467,567 다양하게 있을 수 있음
                     });
 
-            //source day들에서 양수일때만 절사 + target day가 음수에서 양수로 변했을 때의 값 -> 세이프박스
+            //source day들에서 양수일때만 절사  -> 세이프박스
             long safeBoxAmount =
                     monthBudget.getDayBudgetList().stream()
                     .filter(dayBudget -> dayBudget.getDay() >= localNowDay && !dayBudget.getDay().equals(targetDay))
@@ -249,9 +249,12 @@ public class BudgetRedistributionService {
                     }) // 10 단위 이하
                     .sum();
 
+            //target day가 음수에서 양수로 변했을 때의 값 -> 세이프박스
             if(targetBudget.getDayBudget() > 0) {
                 safeBoxAmount += targetBudget.getDayBudget() % 100;
+                targetBudget.subAmount(targetBudget.getDayBudget() % 100);
             }
+
 
             // 각 sourceday에서 양수일 때 10 단위 이하 금액 절사
             monthBudget.getDayBudgetList().stream()
