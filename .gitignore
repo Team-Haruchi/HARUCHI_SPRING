@@ -6,8 +6,7 @@
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 #application-secret.yml파일 무시하기
-src/main/resources/*.yml
-!application.yml
+application-secret.yml
 
 # User-specific stuff
 .idea/**/workspace.xml

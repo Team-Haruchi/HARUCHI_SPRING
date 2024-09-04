@@ -28,6 +28,6 @@ public class ApiResponse <T> {
         return new ApiResponse<>(true, code.getReasonHttpStatus().getCode(), code.getReasonHttpStatus().getMessage(), result);
     }
     public static <T> ApiResponse<T> onFailure(String code, String message, T data) {
-        return new ApiResponse<>(true, code, message, data);
+        return new ApiResponse<>(false, code, message, data);
     }
 }

@@ -31,10 +31,25 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'
+	testAnnotationProcessor('org.projectlombok:lombok')
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	// spring mail
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	// redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	// spring security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	// jwt
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.3' // 0.12.3, 0.11.5
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+jar {
+	enabled = false;
 }
