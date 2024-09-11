@@ -84,7 +84,7 @@
 ## 3. 팀원 소개
 
 | 임지민/제아 | 정명서/루베 | 김은지/리버 | 송민아/앤드 |
-| --- | --- | --- | --- |
+| :---: | :---: | :---: | :---: |
 | [@jimmy0524](https://github.com/jimmy0524) | [@ohu-star](https://github.com/ohu-star) | [@hcg0127](https://github.com/hcg0127) | [@ssongmina](https://github.com/ssongmina) |
 | 서버 배포 및 AWS DB 연결, 당겨쓰기 및 넘겨쓰기 관련 기능, 지출 마감 관련 기능 | 초기세팅, 한달 예산 관련 기능, 한주 예산 및 남은 일정 및 금액 조회 기능 | API 명세서, ERD 설계, 회원가입 및 로그인, 이메일 인증, 회원 관련 기능 | API 명세서, ERD 설계, 하루 및 날짜별 예산 조회, 수입/지출 등록 및 삭제 기능 |
 
